@@ -867,23 +867,7 @@ const rawData = [
     "Late Fees Recovered": 28.18,
     "FX Rate": 28.18
 },
-{
-  "Date": "20/02/2025",
-  "Telco Country": "Airtel Zambia",
-  "Qualified Base": 185520,
-  "Active Base": 938,
-  "Lending Transactions": 941,
-  "Gross Lent": 182832,
-  "Net Lent": 154695,
-  "Service Fee Lent": 28137,
-  "Late Fees Charged": 0,
-  "Recovery Transactions": 848,
-  "Gross Recovered": 129478,
-  "Principal Recovered": 105971,
-  "Service Fee Recovered": 19803,
-  "Late Fees Recovered": 3704,
-  "FX Rate": 28.2
-}
+
   // Add more objects following the same structure...
 ];
 
@@ -900,7 +884,7 @@ const rawData = [
 
 const revenueData = rawData.map((day) => ({
   date: day.Date,
-  serviceFees: parseFloat(day["Service Fee Lent"]),
+  serviceFees: parseFloat(day["Service Fee Recovered"]),
   lateFees: parseFloat(day["Late Fees Recovered"]),
   totalRevenue:
     parseFloat(day["Service Fee Lent"]) + parseFloat(day["Late Fees Recovered"]),
