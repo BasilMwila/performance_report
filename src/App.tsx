@@ -67,6 +67,8 @@ const DashboardCard = ({ title, children }) => (
   </div>
 );
 
+
+
 DashboardCard.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
@@ -927,12 +929,22 @@ const rawData = [
     // Add more objects following the same structure...
   ];
 
+  
+
 // Function to calculate NPL rate
 const calculateNPL = (data) => {
   const totalLent = data.reduce((acc, curr) => acc + parseFloat(curr["Gross Lent"]), 0);
   const totalRecovered = data.reduce((acc, curr) => acc + parseFloat(curr["Gross Recovered"]), 0);
   return ((totalLent - totalRecovered) / totalLent) * 100;
 };
+
+const revenueData = rawData.map((day) => ({
+  date: day.Date,
+  serviceFees: day["Service Fee Recovered"],
+  lateFees: day["Late Fees Recovered"],
+  totalRevenue:
+    day["Service Fee Lent"] + day["Late Fees Recovered"],
+}));
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -991,6 +1003,32 @@ const App = () => {
           </BarChart>
         </ResponsiveContainer>
       </DashboardCard>
+
+      <DashboardCard title="Daily Recoveries">
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={rawData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="Date" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="Gross Recovered" fill="#82ca9d" />
+      </BarChart>
+    </ResponsiveContainer>
+  </DashboardCard>
+
+      <DashboardCard title="Revenue Trends" >
+    <ResponsiveContainer width="100%" height={300}>
+      <LineChart data={revenueData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="date" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Line type="monotone" dataKey="totalRevenue" stroke="#ffc658" />
+      </LineChart>
+    </ResponsiveContainer>
+  </DashboardCard>
 
       <DashboardCard title="Total NPL Distribution">
         <ResponsiveContainer width="100%" height={300}>
