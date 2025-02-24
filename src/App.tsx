@@ -929,7 +929,7 @@ const rawData = [
     // Add more objects following the same structure...
   ];
 
-  
+  const parseDate = (dateString) => new Date(dateString);
 
 // Function to calculate NPL rate
 const calculateNPL = (data) => {
@@ -975,6 +975,7 @@ const App = () => {
       >
         Logout
       </button>
+      
 
       <DashboardCard title="User Trends">
         <ResponsiveContainer width="100%" height={300}>
