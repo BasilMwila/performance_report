@@ -957,7 +957,7 @@ const rawData = [
   "Principal Recovered": 88500,
   "Service Fee Recovered": 17366,
   "Late Fees Recovered": 2306,
-  "FX Rate": 28.17
+  "FX Rate": 28.19
 },
 {
   "Date": "22/02/2025",
