@@ -992,6 +992,23 @@ const rawData = [
   "Service Fee Recovered": 10348,
   "Late Fees Recovered": 1112,
   "FX Rate": 28.23
+},
+{
+  "Date": "24/02/2025",
+  "Telco Country": "Airtel Zambia",
+  "Qualified Base": 185520,
+  "Active Base": 624,
+  "Lending Transactions": 629,
+  "Gross Lent": 127367,
+  "Net Lent": 107430,
+  "Service Fee Lent": 19937,
+  "Late Fees Charged": 0,
+  "Recovery Transactions": 942,
+  "Gross Recovered": 173597,
+  "Principal Recovered": 143350,
+  "Service Fee Recovered": 28004,
+  "Late Fees Recovered": 2243,
+  "FX Rate": 28.23
 }
   
     // Add more objects following the same structure...
