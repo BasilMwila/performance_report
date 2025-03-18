@@ -7,68 +7,59 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Menu Button for Small Screens */}
+      {/* Hamburger Button */}
       <button
-        className="sm:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-full shadow-lg"
+        className="lg:hidden p-4"
         onClick={() => setIsOpen(true)}
       >
-        <Menu size={24} />
+        <Menu size={28} />
       </button>
 
-      {/* Sidebar */}
+      {/* Sidebar - Fullscreen on small devices */}
       <div
-        className={`${
-          isOpen ? "fixed inset-0 w-full h-full z-40 bg-white" : "w-64 h-screen"
-        } bg-white p-4 flex flex-col sm:relative sm:block sm:w-64 sm:h-screen`}
+        className={`fixed inset-0 bg-white p-4 flex flex-col transition-transform duration-300 lg:w-64 lg:h-screen lg:static ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 bg-white"
+        }`}
       >
-        {/* Close Sidebar in Small Screens */}
+        {/* Close overlay when clicking outside */}
         {isOpen && (
-          <button
-            className="absolute top-4 right-4 p-2 bg-gray-200 rounded-full"
+          <div
+            className="absolute inset-0 bg-black opacity-50"
             onClick={() => setIsOpen(false)}
-          >
-            ✕
-          </button>
+          ></div>
         )}
 
-        {/* Logo */}
-        <div className="flex items-center justify-center mb-6 hidden sm:block">
-          <img src="/Emerald_Logo_Web.png" alt="Emerald Finance" className="h-36 w-48" />
+        {/* Sidebar Content */}
+        <div className="relative z-10">
+          {/* Logo */}
+          <div className="flex items-center justify-center mb-6">
+            <img src="/Emerald_Logo_Web.png" alt="Emerald Finance" className="h-36 w-48" />
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex flex-col gap-2">
+            {[
+              { to: "/day7", label: "7-Day Metrics" },
+              { to: "/day14", label: "14-Day Metrics" },
+              { to: "/day21", label: "21-Day Metrics" },
+              { to: "/day30", label: "30-Day Metrics" },
+              { to: "/", label: "Overall Performance", icon: Home },
+            ].map(({ to, label }, index) => (
+              <NavLink
+                key={index}
+                to={to}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 p-2 rounded-lg ${
+                    isActive ? "bg-gray-200" : "hover:bg-gray-100"
+                  }`
+                }
+                onClick={() => setIsOpen(false)}
+              >
+                <Calendar size={20} /> {label}
+              </NavLink>
+            ))}
+          </nav>
         </div>
-        
-        {/* Navigation Links */}
-        <nav className="flex flex-col gap-2 hidden sm:block">
-          <NavLink
-            to="/day7"
-            className={({ isActive }) => `flex items-center gap-2 p-2 rounded-lg ${isActive ? "bg-gray-200" : "hover:bg-gray-100"}`}
-          >
-            <Calendar size={20} /> 7-Day Metrics
-          </NavLink>
-          <NavLink
-            to="/day14"
-            className={({ isActive }) => `flex items-center gap-2 p-2 rounded-lg ${isActive ? "bg-gray-200" : "hover:bg-gray-100"}`}
-          >
-            <Calendar size={20} /> 14-Day Metrics
-          </NavLink>
-          <NavLink
-            to="/day21"
-            className={({ isActive }) => `flex items-center gap-2 p-2 rounded-lg ${isActive ? "bg-gray-200" : "hover:bg-gray-100"}`}
-          >
-            <Calendar size={20} /> 21-Day Metrics
-          </NavLink>
-          <NavLink
-            to="/day30"
-            className={({ isActive }) => `flex items-center gap-2 p-2 rounded-lg ${isActive ? "bg-gray-200" : "hover:bg-gray-100"}`}
-          >
-            <Calendar size={20} /> 30-Day Metrics
-          </NavLink>
-          <NavLink
-            to="/"
-            className={({ isActive }) => `flex items-center gap-2 p-2 rounded-lg ${isActive ? "bg-gray-200" : "hover:bg-gray-100"}`}
-          >
-            <Home size={20} /> Overall Performance
-          </NavLink>
-        </nav>
       </div>
     </>
   );
