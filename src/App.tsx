@@ -11,7 +11,7 @@ import OverallPerf from "./OverallPerf";
 function App() {
   return (
     <Router>
-      <div className="h-screen">
+      <div className="flex h-screen">
         {/* Sidebar is always visible */}
         <Sidebar />
 
