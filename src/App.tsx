@@ -18,34 +18,7 @@ import {
 import useFetch from "./hooks/useFetch";
 import { Calendar, FileText, Folder, Home, Users } from "lucide-react";
 
-// const Login = ({ onLogin }) => {
-//   const [username, setUsername] = useState("");
-//   const [password, setPassword] = useState("");
 
-//   const handleLogin = async (e) => {
-//     e.preventDefault();
-//     const response = await fetch(`http://localhost:5000/users?username=${username}&password=${password}`);
-//     const users = await response.json();
-
-//     if (users.length > 0) {
-//       localStorage.setItem("user", JSON.stringify(users[0]));
-//       onLogin(users[0]);
-//     } else {
-//       alert("Invalid credentials");
-//     }
-//   };
-
-//   return (
-//     <div className="flex justify-center items-center min-h-screen bg-gray-100">
-//       <form onSubmit={handleLogin} className="p-6 bg-white shadow-md rounded-lg">
-//         <h2 className="text-xl font-bold mb-4">Login</h2>
-//         <input className="border p-2 mb-2 w-full" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-//         <input className="border p-2 mb-2 w-full" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-//         <button type="submit" className="bg-blue-500 text-white p-2 w-full rounded">Login</button>
-//       </form>
-//     </div>
-//   );
-// };
 
 
 
@@ -138,13 +111,13 @@ const App = () => {
 
       <div className="flex h-screen">
   {/* Sidebar */}
-  <div className="w-64 bg-white text-black flex flex-col p-4">
+  {/* <div className="w-64 bg-white text-black flex flex-col p-4">
     <div className="flex items-center space-x-2 mb-6">
       <span className="text-2xl font-bold">
         <img src="Emerald_Logo_Web.png" alt="Emerald Logo"/>
       </span>
-    </div>
-    <nav className="flex-1">
+    </div> */}
+    {/* <nav className="flex-1">
       <ul className="space-y-2">
         <li className="flex items-center p-2 bg-gray-300 rounded-lg">
           <Home className="w-5 h-5 mr-3" />
@@ -170,9 +143,9 @@ const App = () => {
           <span>Reports</span>
         </li>
       </ul>
-    </nav>
+    </nav> */}
     
-  </div>
+  {/* </div> */}
 
   {/* Dashboard Content */}
   <div className="flex-grow p-4 bg-white">
@@ -180,16 +153,7 @@ const App = () => {
       Emerald Finance Performance Dashboard
     </h1>
 
-    {/* <button
-      className="self-end bg-red-500 text-white px-4 py-2 rounded mb-4"
-      onClick={() => {
-        localStorage.removeItem("user");
-        setUser(null);
-      }}
-    >
-      Logout
-    </button> */}
-     {/* /Log/ */}
+
      <DashboardCard title="User Trends">
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
