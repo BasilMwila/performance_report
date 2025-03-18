@@ -37,8 +37,7 @@ DashboardCard.propTypes = {
 const App = () => {
   const { data } = useFetch("/Data.csv");
   const [user, setUser] = useState(null);
-  const [monthlyRates, setMonthlyRates] = useState<{ period: string; returnRate: number }[]>([]);
-  const [weeklyRates, setWeeklyRates] = useState<{ period: string; returnRate: number }[]>([]);
+  
   
 
   useEffect(() => {
@@ -46,14 +45,8 @@ const App = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
 
-    // if (data.length > 0) {
-    //   const { monthlyRates, weeklyRates } = calculateReturnRates(data);
-    //   setMonthlyRates(monthlyRates);
-    //   setWeeklyRates(weeklyRates);
-    // }
   }, [data]);
 
-  // if (!user) return <Login onLogin={setUser} />;
 
   const calculateRevenueData = data.map((item) => ({
     Date: item.Date,
@@ -67,57 +60,19 @@ const App = () => {
 
   
 
-  // const calculateReturnRates = (data: any[]) => {
-  //   if (!data || data.length === 0) return { monthlyRates: [], weeklyRates: [] };
-  
-  //   const groupedByMonth: { [key: string]: any } = {};
-  //   const groupedByWeek: { [key: string]: any } = {};
-  
-  //   data.forEach((entry) => {
-  //     const date = new Date(entry.Date);
-  //     const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-  //     const weekKey = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
-  
-  //     if (!groupedByMonth[monthKey]) {
-  //       groupedByMonth[monthKey] = { month: monthKey, principalRecovered: 0, grossLent: 0 };
-  //     }
-  //     if (!groupedByWeek[weekKey]) {
-  //       groupedByWeek[weekKey] = { week: weekKey, principalRecovered: 0, grossLent: 0 };
-  //     }
-  
-  //     groupedByMonth[monthKey].principalRecovered += entry["Principal Recovered"];
-  //     groupedByMonth[monthKey].grossLent += entry["Gross Lent"];
-      
-  //     groupedByWeek[weekKey].principalRecovered += entry["Principal Recovered"];
-  //     groupedByWeek[weekKey].grossLent += entry["Gross Lent"];
-  //   });
-  
-  //   const monthlyRates = Object.values(groupedByMonth).map((item) => ({
-  //     period: item.month,
-  //     returnRate: item.grossLent ? (item.principalRecovered / item.grossLent) * 100 : 0,
-  //   }));
-  
-  //   const weeklyRates = Object.values(groupedByWeek).map((item) => ({
-  //     period: item.week,
-  //     returnRate: item.grossLent ? (item.principalRecovered / item.grossLent) * 100 : 0,
-  //   }));
-  
-  //   return { monthlyRates, weeklyRates };
-  // };
-  
 
   return (
     <div className="p-4 bg-white flex flex-col w-full">
 
       <div className="flex h-screen">
   {/* Sidebar */}
-  {/* <div className="w-64 bg-white text-black flex flex-col p-4">
+  <div className="w-64 bg-white text-black flex flex-col p-4 hidden sm:block">
     <div className="flex items-center space-x-2 mb-6">
       <span className="text-2xl font-bold">
         <img src="Emerald_Logo_Web.png" alt="Emerald Logo"/>
       </span>
-    </div> */}
-    {/* <nav className="flex-1">
+    </div> 
+   <nav className="flex-1">
       <ul className="space-y-2">
         <li className="flex items-center p-2 bg-gray-300 rounded-lg">
           <Home className="w-5 h-5 mr-3" />
@@ -143,9 +98,9 @@ const App = () => {
           <span>Reports</span>
         </li>
       </ul>
-    </nav> */}
+    </nav>
     
-  {/* </div> */}
+  </div>
 
   {/* Dashboard Content */}
   <div className="flex-grow p-4 bg-white">
