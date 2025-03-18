@@ -18,34 +18,34 @@ import {
 import useFetch from "./hooks/useFetch";
 import { Calendar, FileText, Folder, Home, Users } from "lucide-react";
 
-const Login = ({ onLogin }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+// const Login = ({ onLogin }) => {
+//   const [username, setUsername] = useState("");
+//   const [password, setPassword] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const response = await fetch(`http://localhost:5000/users?username=${username}&password=${password}`);
-    const users = await response.json();
+//   const handleLogin = async (e) => {
+//     e.preventDefault();
+//     const response = await fetch(`http://localhost:5000/users?username=${username}&password=${password}`);
+//     const users = await response.json();
 
-    if (users.length > 0) {
-      localStorage.setItem("user", JSON.stringify(users[0]));
-      onLogin(users[0]);
-    } else {
-      alert("Invalid credentials");
-    }
-  };
+//     if (users.length > 0) {
+//       localStorage.setItem("user", JSON.stringify(users[0]));
+//       onLogin(users[0]);
+//     } else {
+//       alert("Invalid credentials");
+//     }
+//   };
 
-  return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <form onSubmit={handleLogin} className="p-6 bg-white shadow-md rounded-lg">
-        <h2 className="text-xl font-bold mb-4">Login</h2>
-        <input className="border p-2 mb-2 w-full" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <input className="border p-2 mb-2 w-full" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button type="submit" className="bg-blue-500 text-white p-2 w-full rounded">Login</button>
-      </form>
-    </div>
-  );
-};
+//   return (
+//     <div className="flex justify-center items-center min-h-screen bg-gray-100">
+//       <form onSubmit={handleLogin} className="p-6 bg-white shadow-md rounded-lg">
+//         <h2 className="text-xl font-bold mb-4">Login</h2>
+//         <input className="border p-2 mb-2 w-full" type="text" placeholder="Username" value={username} onChange={(e) => setUsername(e.target.value)} />
+//         <input className="border p-2 mb-2 w-full" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+//         <button type="submit" className="bg-blue-500 text-white p-2 w-full rounded">Login</button>
+//       </form>
+//     </div>
+//   );
+// };
 
 
 
@@ -80,7 +80,7 @@ const App = () => {
     // }
   }, [data]);
 
-  if (!user) return <Login onLogin={setUser} />;
+  // if (!user) return <Login onLogin={setUser} />;
 
   const calculateRevenueData = data.map((item) => ({
     Date: item.Date,
@@ -180,7 +180,7 @@ const App = () => {
       Emerald Finance Performance Dashboard
     </h1>
 
-    <button
+    {/* <button
       className="self-end bg-red-500 text-white px-4 py-2 rounded mb-4"
       onClick={() => {
         localStorage.removeItem("user");
@@ -188,7 +188,7 @@ const App = () => {
       }}
     >
       Logout
-    </button>
+    </button> */}
      {/* /Log/ */}
      <DashboardCard title="User Trends">
       <ResponsiveContainer width="100%" height={300}>
