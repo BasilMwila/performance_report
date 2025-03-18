@@ -189,8 +189,8 @@ const App = () => {
     >
       Logout
     </button>
-
-    <DashboardCard title="User Trends">
+     {/* /Log/ */}
+     <DashboardCard title="User Trends">
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
