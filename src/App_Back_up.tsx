@@ -166,7 +166,24 @@ const App = () => {
         </ResponsiveContainer>
       </DashboardCard>
 
-      <DashboardCard title="Revenue Trends">
+
+      <DashboardCard title="Recovery Performance">
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="Date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="Gross Recovered" fill="#34a853" />
+            <Bar dataKey="Principal Recovered" fill="#4285f4" />
+            <Bar dataKey="Service Fee Recovered" fill="#fbbc05" />
+          </BarChart>
+        </ResponsiveContainer>
+      </DashboardCard>
+
+
+      {/* <DashboardCard title="Revenue Trends">
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={calculateRevenueData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -177,7 +194,7 @@ const App = () => {
             <Line type="monotone" dataKey="Revenue" stroke="#82ca9d" />
           </LineChart>
         </ResponsiveContainer>
-      </DashboardCard>
+      </DashboardCard> */}
 
       <DashboardCard title="Non-Performing Loans (NPL)">
         <ResponsiveContainer width="100%" height={300}>
@@ -192,17 +209,15 @@ const App = () => {
         </ResponsiveContainer>
       </DashboardCard>
 
-      <DashboardCard title="Recovery Performance">
+      <DashboardCard title="Daily Revenue">
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
+          <BarChart data={calculateRevenueData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="Date" />
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="Gross Recovered" fill="#34a853" />
-            <Bar dataKey="Principal Recovered" fill="#4285f4" />
-            <Bar dataKey="Service Fee Recovered" fill="#fbbc05" />
+            <Bar dataKey="Revenue" fill="#8884d8" />
           </BarChart>
         </ResponsiveContainer>
       </DashboardCard>

@@ -16,6 +16,7 @@ import {
   Cell,
 } from "recharts";
 import useFetch from "./hooks/useFetch";
+import { Calendar, FileText, Folder, Home, Users } from "lucide-react";
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState("");
@@ -72,11 +73,11 @@ const App = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
 
-    if (data.length > 0) {
-      const { monthlyRates, weeklyRates } = calculateReturnRates(data);
-      setMonthlyRates(monthlyRates);
-      setWeeklyRates(weeklyRates);
-    }
+    // if (data.length > 0) {
+    //   const { monthlyRates, weeklyRates } = calculateReturnRates(data);
+    //   setMonthlyRates(monthlyRates);
+    //   setWeeklyRates(weeklyRates);
+    // }
   }, [data]);
 
   if (!user) return <Login onLogin={setUser} />;
@@ -93,151 +94,172 @@ const App = () => {
 
   
 
-  const calculateReturnRates = (data: any[]) => {
-    if (!data || data.length === 0) return { monthlyRates: [], weeklyRates: [] };
+  // const calculateReturnRates = (data: any[]) => {
+  //   if (!data || data.length === 0) return { monthlyRates: [], weeklyRates: [] };
   
-    const groupedByMonth: { [key: string]: any } = {};
-    const groupedByWeek: { [key: string]: any } = {};
+  //   const groupedByMonth: { [key: string]: any } = {};
+  //   const groupedByWeek: { [key: string]: any } = {};
   
-    data.forEach((entry) => {
-      const date = new Date(entry.Date);
-      const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
-      const weekKey = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
+  //   data.forEach((entry) => {
+  //     const date = new Date(entry.Date);
+  //     const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+  //     const weekKey = `${date.getFullYear()}-W${Math.ceil(date.getDate() / 7)}`;
   
-      if (!groupedByMonth[monthKey]) {
-        groupedByMonth[monthKey] = { month: monthKey, principalRecovered: 0, grossLent: 0 };
-      }
-      if (!groupedByWeek[weekKey]) {
-        groupedByWeek[weekKey] = { week: weekKey, principalRecovered: 0, grossLent: 0 };
-      }
+  //     if (!groupedByMonth[monthKey]) {
+  //       groupedByMonth[monthKey] = { month: monthKey, principalRecovered: 0, grossLent: 0 };
+  //     }
+  //     if (!groupedByWeek[weekKey]) {
+  //       groupedByWeek[weekKey] = { week: weekKey, principalRecovered: 0, grossLent: 0 };
+  //     }
   
-      groupedByMonth[monthKey].principalRecovered += entry["Principal Recovered"];
-      groupedByMonth[monthKey].grossLent += entry["Gross Lent"];
+  //     groupedByMonth[monthKey].principalRecovered += entry["Principal Recovered"];
+  //     groupedByMonth[monthKey].grossLent += entry["Gross Lent"];
       
-      groupedByWeek[weekKey].principalRecovered += entry["Principal Recovered"];
-      groupedByWeek[weekKey].grossLent += entry["Gross Lent"];
-    });
+  //     groupedByWeek[weekKey].principalRecovered += entry["Principal Recovered"];
+  //     groupedByWeek[weekKey].grossLent += entry["Gross Lent"];
+  //   });
   
-    const monthlyRates = Object.values(groupedByMonth).map((item) => ({
-      period: item.month,
-      returnRate: item.grossLent ? (item.principalRecovered / item.grossLent) * 100 : 0,
-    }));
+  //   const monthlyRates = Object.values(groupedByMonth).map((item) => ({
+  //     period: item.month,
+  //     returnRate: item.grossLent ? (item.principalRecovered / item.grossLent) * 100 : 0,
+  //   }));
   
-    const weeklyRates = Object.values(groupedByWeek).map((item) => ({
-      period: item.week,
-      returnRate: item.grossLent ? (item.principalRecovered / item.grossLent) * 100 : 0,
-    }));
+  //   const weeklyRates = Object.values(groupedByWeek).map((item) => ({
+  //     period: item.week,
+  //     returnRate: item.grossLent ? (item.principalRecovered / item.grossLent) * 100 : 0,
+  //   }));
   
-    return { monthlyRates, weeklyRates };
-  };
+  //   return { monthlyRates, weeklyRates };
+  // };
   
 
   return (
-    <div className="p-4 bg-gray-50 flex flex-col w-full">
-      <h1 className="text-2xl font-bold mb-6 text-center w-full">Emerald Finance Performance Dashboard</h1>
-      <button className="self-end bg-red-500 text-white px-4 py-2 rounded mb-4" onClick={() => { localStorage.removeItem("user"); setUser(null); }}>
-        Logout
-      </button>
-<DashboardCard title="User Trends">
-  <ResponsiveContainer width="100%" height={300}>
-    <LineChart data={data}>
-      <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="Date" />
-      <YAxis yAxisId="left" />
-      <YAxis yAxisId="right" orientation="right" /> {/* Added right Y-axis */}
-      <Tooltip />
-      <Legend />
-      <Line yAxisId="left" type="monotone" dataKey="Qualified Base" stroke="#8884d8" />
-      <Line yAxisId="right" type="monotone" dataKey="Active Base" stroke="#82ca9d" /> {/* Uses right Y-axis */}
-    </LineChart>
-  </ResponsiveContainer>
-</DashboardCard>
+    <div className="p-4 bg-white flex flex-col w-full">
 
-      <DashboardCard title="Daily Disbursements">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="Date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Gross Lent" fill="#8884d8" />
-          </BarChart>
-        </ResponsiveContainer>
-      </DashboardCard>
+      <div className="flex h-screen">
+  {/* Sidebar */}
+  <div className="w-64 bg-white text-black flex flex-col p-4">
+    <div className="flex items-center space-x-2 mb-6">
+      <span className="text-2xl font-bold">
+        <img src="Emerald_Logo_Web.png" alt="Emerald Logo"/>
+      </span>
+    </div>
+    <nav className="flex-1">
+      <ul className="space-y-2">
+        <li className="flex items-center p-2 bg-gray-300 rounded-lg">
+          <Home className="w-5 h-5 mr-3" />
+          <span>Dashboard</span>
+    
+        </li>
+        <li className="flex items-center p-2 hover:bg-gray-100 rounded-lg">
+          <Users className="w-5 h-5 mr-3" />
+          <span>Risk Control Metrics</span>
+        </li>
+        <li className="flex items-center p-2 hover:bg-gray-100 rounded-lg">
+          <Folder className="w-5 h-5 mr-3" />
+          <span>Projects</span>
+          
+        </li>
+        <li className="flex items-center p-2 hover:bg-gray-100 rounded-lg">
+          <Calendar className="w-5 h-5 mr-3" />
+          <span>Calendar</span>
+        
+        </li>
+        <li className="flex items-center p-2 hover:bg-gray-100 rounded-lg">
+          <BarChart className="w-5 h-5 mr-3" />
+          <span>Reports</span>
+        </li>
+      </ul>
+    </nav>
+    
+  </div>
 
+  {/* Dashboard Content */}
+  <div className="flex-grow p-4 bg-white">
+    <h1 className="text-2xl font-bold mb-6 text-center text-green-700 w-full">
+      Emerald Finance Performance Dashboard
+    </h1>
 
-      <DashboardCard title="Recovery Performance">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="Date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Gross Recovered" fill="#34a853" />
-            <Bar dataKey="Principal Recovered" fill="#4285f4" />
-            <Bar dataKey="Service Fee Recovered" fill="#fbbc05" />
-          </BarChart>
-        </ResponsiveContainer>
-      </DashboardCard>
+    <button
+      className="self-end bg-red-500 text-white px-4 py-2 rounded mb-4"
+      onClick={() => {
+        localStorage.removeItem("user");
+        setUser(null);
+      }}
+    >
+      Logout
+    </button>
 
+    <DashboardCard title="User Trends">
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="Date" />
+          <YAxis yAxisId="left" />
+          <YAxis yAxisId="right" orientation="right" />
+          <Tooltip />
+          <Legend />
+          <Line yAxisId="left" type="monotone" dataKey="Qualified Base" stroke="#8884d8" />
+          <Line yAxisId="right" type="monotone" dataKey="Active Base" stroke="#82ca9d" />
+        </LineChart>
+      </ResponsiveContainer>
+    </DashboardCard>
 
-      {/* <DashboardCard title="Revenue Trends">
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={calculateRevenueData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="Date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="Revenue" stroke="#82ca9d" />
-          </LineChart>
-        </ResponsiveContainer>
-      </DashboardCard> */}
+    <DashboardCard title="Daily Disbursements">
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="Date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="Gross Lent" fill="#8884d8" />
+        </BarChart>
+      </ResponsiveContainer>
+    </DashboardCard>
 
-      <DashboardCard title="Non-Performing Loans (NPL)">
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={calculateNPLData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="Date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="NPL" stroke="#ff7300" />
-          </LineChart>
-        </ResponsiveContainer>
-      </DashboardCard>
+    <DashboardCard title="Recovery Performance">
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="Date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="Gross Recovered" fill="#34a853" />
+          <Bar dataKey="Principal Recovered" fill="#4285f4" />
+          <Bar dataKey="Service Fee Recovered" fill="#fbbc05" />
+        </BarChart>
+      </ResponsiveContainer>
+    </DashboardCard>
 
-      <DashboardCard title="Daily Revenue">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={calculateRevenueData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="Date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Revenue" fill="#8884d8" />
-          </BarChart>
-        </ResponsiveContainer>
-      </DashboardCard>
+    <DashboardCard title="Non-Performing Loans (NPL)">
+      <ResponsiveContainer width="100%" height={300}>
+        <LineChart data={calculateNPLData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="Date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Line type="monotone" dataKey="NPL" stroke="#ff7300" />
+        </LineChart>
+      </ResponsiveContainer>
+    </DashboardCard>
 
-      <DashboardCard title="Principal Return Rate (Monthly & Weekly)">
-  <ResponsiveContainer width="100%" height={300}>
-    {data.length > 0 ? (
-      <BarChart data={[...monthlyRates, ...weeklyRates]}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="period" />
-        <YAxis label={{ value: "Return Rate (%)", angle: -90, position: "insideLeft" }} />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="returnRate" fill="#82ca9d" />
-      </BarChart>
-    ) : (
-      <p>Loading data...</p>
-    )}
-  </ResponsiveContainer>
-</DashboardCard>
+    <DashboardCard title="Daily Revenue">
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={calculateRevenueData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="Date" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="Revenue" fill="#8884d8" />
+        </BarChart>
+      </ResponsiveContainer>
+    </DashboardCard>
+  </div>
+</div>
 
     </div>
   );
