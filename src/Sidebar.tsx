@@ -16,19 +16,13 @@ const Sidebar = () => {
       </button>
 
       {/* Sidebar - Fullscreen on small devices */}
+      {isOpen && <div className="fixed inset-0 bg-black opacity-50 z-40" onClick={() => setIsOpen(false)}></div>}
+      
       <div
-        className={`fixed inset-0 bg-white p-4 flex flex-col transition-transform duration-300 lg:w-64 lg:h-screen lg:static ${
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 bg-white"
+        className={`fixed inset-0 bg-white p-4 flex flex-col transition-transform duration-300 z-50 lg:w-64 lg:h-screen lg:static ${
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        {/* Close overlay when clicking outside */}
-        {isOpen && (
-          <div
-            className="absolute inset-0 bg-black opacity-50"
-            onClick={() => setIsOpen(false)}
-          ></div>
-        )}
-
         {/* Sidebar Content */}
         <div className="relative z-10">
           {/* Logo */}
