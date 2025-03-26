@@ -106,19 +106,6 @@ const Day7 = () => {
       </ResponsiveContainer>
     </DashboardCard>
 
-     <DashboardCard title="Non-Performing Loans (NPL)">
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={calculateNPLData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="Date" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="NPL" stroke="#ff7300" />
-        </LineChart>
-      </ResponsiveContainer>
-    </DashboardCard> 
-
     <DashboardCard title="Daily Revenue">
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={calculateRevenueData}>
