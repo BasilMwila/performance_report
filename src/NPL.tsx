@@ -76,7 +76,7 @@ const RecoveryRateDashboard = () => {
               <YAxis 
                 tickFormatter={formatNumber}
                 width={80}
-                label={{ value: 'Amount (ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
+                label={{ value: 'Amount(ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
               />
               <Tooltip 
                 formatter={(value) => [new Intl.NumberFormat('en-US').format(value as number), 'Amount']}
