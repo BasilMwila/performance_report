@@ -32,7 +32,7 @@ const RecoveryRateDashboard = () => {
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-bold text-center">Airtel Zambia NPL Report Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         {/* Loan Type Balance and Recovery Chart */}
         <div className="bg-white shadow-md rounded-lg p-4 h-[400px]">
           <h2 className="text-xl font-semibold mb-4">Loan Type Performance</h2>
