@@ -38,6 +38,7 @@ const Sidebar = () => {
               { to: "/day21", label: "21-Day Metrics" },
               { to: "/day30", label: "30-Day Metrics" },
               { to: "/", label: "Overall Performance", icon: Home },
+              { to: "/NPL", label: "NPL Report" },
             ].map(({ to, label }, index) => (
               <NavLink
                 key={index}

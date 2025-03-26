@@ -7,7 +7,7 @@ import Day14 from "./Day14";
 import Day21 from "./Day21";
 import Day30 from "./Day30";
 import OverallPerf from "./OverallPerf";
-
+import NPL from "./NPL";
 function App() {
   return (
     <Router>
@@ -23,6 +23,7 @@ function App() {
             <Route path="/day14" element={<Day14 />} />
             <Route path="/day21" element={<Day21 />} /> 
             <Route path="/day30" element={<Day30 />} />
+            <Route path="/NPL" element={<NPL />} />
             {/* Add more routes as needed */}
           </Routes>
         </div>
