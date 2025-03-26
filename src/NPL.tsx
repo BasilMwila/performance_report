@@ -20,6 +20,13 @@ const ArrearsOverTimeData = [
   { name: '181+ days in arrears', amount: 1260750 }
 ];
 
+const formatNumber = (value) => {
+  return new Intl.NumberFormat('en-US', { 
+    notation: 'compact',
+    compactDisplay: 'short'
+  }).format(value);
+};
+
 const RecoveryRateDashboard = () => {
   return (
     <div className="p-4 space-y-6">
@@ -27,14 +34,20 @@ const RecoveryRateDashboard = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Loan Type Balance and Recovery Chart */}
-        <div className="bg-white shadow-md rounded-lg p-4">
+        <div className="bg-white shadow-md rounded-lg p-4 h-[400px]">
           <h2 className="text-xl font-semibold mb-4">Loan Type Performance</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={loanTypeData}>
+          <ResponsiveContainer width="100%" height="90%">
+            <BarChart data={loanTypeData} margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
+              <YAxis 
+                tickFormatter={formatNumber}
+                width={80}
+                label={{ value: 'Amount (ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
+              />
+              <Tooltip 
+                formatter={(value) => [new Intl.NumberFormat('en-US').format(value as number), 'Amount']}
+              />
               <Legend />
               <Bar dataKey="outstandingBalance" fill="#8884d8" name="Outstanding Balance" />
               <Bar dataKey="totalRecovered" fill="#82ca9d" name="Total Recovered" />
@@ -43,14 +56,31 @@ const RecoveryRateDashboard = () => {
         </div>
 
         {/* Arrears Over Time Chart */}
-        <div className="bg-white shadow-md rounded-lg p-4">
+        <div className="bg-white shadow-md rounded-lg p-4 h-[450px]">
           <h2 className="text-xl font-semibold mb-4">Arrears Distribution Over Time</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={ArrearsOverTimeData}>
+          <ResponsiveContainer width="100%" height="85%">
+            <BarChart data={ArrearsOverTimeData} margin={{ left: 20, bottom: 50 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" interval={0} height={100} />
-              <YAxis />
-              <Tooltip />
+              <XAxis 
+                dataKey="name" 
+                angle={-45} 
+                textAnchor="end" 
+                interval={0} 
+                height={100}
+                tick={{
+                  dx: -10,
+                  dy: 10,
+                  fontSize: '0.75rem'
+                }}
+              />
+              <YAxis 
+                tickFormatter={formatNumber}
+                width={80}
+                label={{ value: 'Amount (ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
+              />
+              <Tooltip 
+                formatter={(value) => [new Intl.NumberFormat('en-US').format(value as number), 'Amount']}
+              />
               <Bar dataKey="amount" fill="#ffc658" name="Arrears Amount" />
             </BarChart>
           </ResponsiveContainer>
