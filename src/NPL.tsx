@@ -30,7 +30,7 @@ const formatNumber = (value) => {
 const RecoveryRateDashboard = () => {
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-center">Airtel Zambia NPL Report Dashboard</h1>
+      <h1 className="text-2xl font-bold text-center"> NPL Report Dashboard</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         {/* Loan Type Balance and Recovery Chart */}
