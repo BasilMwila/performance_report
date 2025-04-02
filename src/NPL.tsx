@@ -73,7 +73,7 @@ const RecoveryRateDashboard = () => {
                 ))}
               </Pie>
               <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold">
-                69.88%
+                {totalOverdueRateData[0].value.toFixed(2) + '%'}
               </text>
             </PieChart>
           </ResponsiveContainer>
@@ -101,7 +101,7 @@ const RecoveryRateDashboard = () => {
                 ))}
               </Pie>
               <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold">
-                38.19%
+                {nplRateData[0].value.toFixed(2) + '%'} 
               </text>
             </PieChart>
           </ResponsiveContainer>
