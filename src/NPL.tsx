@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 // Prepare data for visualization
 const loanTypeData = [
@@ -20,6 +20,23 @@ const ArrearsOverTimeData = [
   { name: '181+ days in arrears', amount: 1626737 }
 ];
 
+// Calculated from the net outstanding balance data
+const totalOverdueRateData = [
+  { name: 'Overdue', value: 69.88 },
+  { name: 'Within Tenure', value: 30.12 }
+];
+
+// NPL rate - 90+ days in arrears
+const nplRateData = [
+  { name: 'NPL', value: 38.19 },
+  { name: 'Performing', value: 61.81 }
+];
+
+const COLORS = {
+  overdue: ['#ff6b6b', '#74b9ff'],
+  npl: ['#ff4757', '#7bed9f']
+};
+
 const formatNumber = (value) => {
   return new Intl.NumberFormat('en-US', { 
     notation: 'compact',
@@ -30,11 +47,70 @@ const formatNumber = (value) => {
 const RecoveryRateDashboard = () => {
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-center"> NPL Report Dashboard</h1>
+      <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
+      
+      {/* Dial Charts Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Total Overdue Rate Dial */}
+        <div className="bg-white shadow-md rounded-lg p-4 h-64">
+          <h2 className="text-xl font-semibold mb-2 text-center">Total Overdue Rate</h2>
+          <p className="text-sm text-gray-500 text-center mb-4">(Total Overdue/Total Net Outstanding)</p>
+          <ResponsiveContainer width="100%" height="80%">
+            <PieChart>
+              <Pie
+                data={totalOverdueRateData}
+                cx="50%"
+                cy="50%"
+                startAngle={180}
+                endAngle={0}
+                innerRadius="60%"
+                outerRadius="80%"
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {totalOverdueRateData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS.overdue[index]} />
+                ))}
+              </Pie>
+              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold">
+                69.88%
+              </text>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        
+        {/* NPL Rate Dial */}
+        <div className="bg-white shadow-md rounded-lg p-4 h-64">
+          <h2 className="text-xl font-semibold mb-2 text-center">NPL Rate</h2>
+          <p className="text-sm text-gray-500 text-center mb-4">(90+ Days in Arrears/Total Net Outstanding)</p>
+          <ResponsiveContainer width="100%" height="80%">
+            <PieChart>
+              <Pie
+                data={nplRateData}
+                cx="50%"
+                cy="50%"
+                startAngle={180}
+                endAngle={0}
+                innerRadius="60%"
+                outerRadius="80%"
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {nplRateData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS.npl[index]} />
+                ))}
+              </Pie>
+              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold">
+                38.19%
+              </text>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         {/* Loan Type Balance and Recovery Chart */}
-        <div className="bg-white shadow-md rounded-lg p-4 h-[400px]">
+        <div className="bg-white shadow-md rounded-lg p-4 h-96">
           <h2 className="text-xl font-semibold mb-4">Loan Type Performance</h2>
           <ResponsiveContainer width="100%" height="90%">
             <BarChart data={loanTypeData} margin={{ left: 20 }}>
@@ -46,7 +122,12 @@ const RecoveryRateDashboard = () => {
                 label={{ value: 'Amount (ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
               />
               <Tooltip 
-                formatter={(value) => [new Intl.NumberFormat('en-US').format(value as number), 'Amount']}
+                formatter={(value, name) => {
+                  if (typeof value === 'number') {
+                    return [new Intl.NumberFormat('en-US').format(value), name];
+                  }
+                  return [value, name];
+                }}
               />
               <Legend />
               <Bar dataKey="outstandingBalance" fill="#8884d8" name="Outstanding Balance" />
@@ -56,7 +137,7 @@ const RecoveryRateDashboard = () => {
         </div>
 
         {/* Arrears Over Time Chart */}
-        <div className="bg-white shadow-md rounded-lg p-4 h-[450px]">
+        <div className="bg-white shadow-md rounded-lg p-4 h-96">
           <h2 className="text-xl font-semibold mb-4">Arrears Distribution Over Time</h2>
           <ResponsiveContainer width="100%" height="85%">
             <BarChart data={ArrearsOverTimeData} margin={{ left: 20, bottom: 50 }}>
@@ -79,7 +160,12 @@ const RecoveryRateDashboard = () => {
                 label={{ value: 'Amount(ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
               />
               <Tooltip 
-                formatter={(value) => [new Intl.NumberFormat('en-US').format(value as number), 'Amount']}
+                formatter={(value, name) => {
+                  if (typeof value === 'number') {
+                    return [new Intl.NumberFormat('en-US').format(value), name];
+                  }
+                  return [value, name];
+                }}
               />
               <Bar dataKey="amount" fill="#ffc658" name="Arrears Amount" />
             </BarChart>
