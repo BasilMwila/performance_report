@@ -3,21 +3,21 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 // Prepare data for visualization
 const loanTypeData = [
-  { name: '7 Days Loan', outstandingBalance: 1457497, totalRecovered: 3640709, unrecoveredPercentage: 22.39 },
-  { name: '14 Days Loan', outstandingBalance: 3197580, totalRecovered: 4899872, unrecoveredPercentage: 32.63 },
-  { name: '21 Days Loan', outstandingBalance: 1419345, totalRecovered: 2033642, unrecoveredPercentage: 32.29 },
-  { name: '30 Days Loan', outstandingBalance: 8778014, totalRecovered: 9872876, unrecoveredPercentage: 38.47 }
+  { name: '7 Days Loan', outstandingBalance: 1614775, totalRecovered: 4239173, unrecoveredPercentage: 21.87 },
+  { name: '14 Days Loan', outstandingBalance: 3722230, totalRecovered: 5928203, unrecoveredPercentage: 32.11 },
+  { name: '21 Days Loan', outstandingBalance: 1469192, totalRecovered: 2315724, unrecoveredPercentage: 30.37 },
+  { name: '30 Days Loan', outstandingBalance: 9051079, totalRecovered: 11454670, unrecoveredPercentage: 35.77 }
 ];
 
 const ArrearsOverTimeData = [
-  { name: 'Within Tenure', amount: 3783182 },
-  { name: '30 days in arrears', amount: 1563554 },
-  { name: '31-60 days in arrears', amount: 1311402 },
-  { name: '61-90 days in arrears', amount: 1429759 },
-  { name: '91-120 days in arrears', amount: 2245783 },
-  { name: '121-150 days in arrears', amount: 1641346 },
-  { name: '151-180 days in arrears', amount: 1250673 },
-  { name: '181+ days in arrears', amount: 1626737 }
+  { name: 'Within Tenure', amount: 4022787 },
+  { name: '30 days in arrears', amount: 11834489 },
+  { name: '31-60 days in arrears', amount: 10008410 },
+  { name: '61-90 days in arrears', amount: 8910474 },
+  { name: '91-120 days in arrears', amount: 7749288 },
+  { name: '121-150 days in arrears', amount: 6169272 },
+  { name: '151-180 days in arrears', amount: 4012766 },
+  { name: '181+ days in arrears', amount: 2503080 }
 ];
 
 // Calculated from the net outstanding balance data
