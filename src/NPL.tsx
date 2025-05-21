@@ -3,33 +3,62 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 // Prepare data for visualization
 const loanTypeData = [
-  { name: '7 Days Loan', outstandingBalance: 1614775, totalRecovered: 4239173, unrecoveredPercentage: 21.87 },
-  { name: '14 Days Loan', outstandingBalance: 3722230, totalRecovered: 5928203, unrecoveredPercentage: 32.11 },
-  { name: '21 Days Loan', outstandingBalance: 1469192, totalRecovered: 2315724, unrecoveredPercentage: 30.37 },
-  { name: '30 Days Loan', outstandingBalance: 9051079, totalRecovered: 11454670, unrecoveredPercentage: 35.77 }
+  { name: '7 Days Loan', outstandingBalance: 1150351, totalRecovered: 5086449, unrecoveredPercentage: 18.44 },
+  { name: '14 Days Loan', outstandingBalance: 2987003, totalRecovered: 7460282, unrecoveredPercentage: 27.97 },
+  { name: '21 Days Loan', outstandingBalance: 1029892, totalRecovered: 2646149, unrecoveredPercentage: 28.02 },
+  { name: '30 Days Loan', outstandingBalance: 6519101, totalRecovered: 13535706, unrecoveredPercentage: 32.51 },
+  { name: 'Total Balance', outstandingBalance: 11596347, totalRecovered: 28728586, unrecoveredPercentage: 28.76 }
 ];
 
 const ArrearsOverTimeData = [
-  { name: 'Within Tenure', amount: 4022787 },
-  { name: '30 days in arrears', amount: 11834489 },
-  { name: '31-60 days in arrears', amount: 10008410 },
-  { name: '61-90 days in arrears', amount: 8910474 },
-  { name: '91-120 days in arrears', amount: 7749288 },
-  { name: '121-150 days in arrears', amount: 6169272 },
-  { name: '151-180 days in arrears', amount: 4012766 },
-  { name: '181+ days in arrears', amount: 2503080 }
+  { name: 'Within Tenure', amount: 3325173 },
+  { name: '30 days in arrears', amount: 1303759 },
+  { name: '31-60 days in arrears', amount: 805215 },
+  { name: '61-90 days in arrears', amount: 836181 },
+  { name: '91-120 days in arrears', amount: 788173 },
+  { name: '121-150 days in arrears', amount: 1144112 },
+  { name: '151-180 days in arrears', amount: 1320656 },
+  { name: '181+ days in arrears', amount: 2073078 }
 ];
 
-// Calculated from the net outstanding balance data
+// Calculate actual total values from the data
+const calculateMetrics = () => {
+  const totalNetOutstanding = ArrearsOverTimeData.reduce((sum, item) => sum + item.amount, 0);
+  
+  const totalOverdue = ArrearsOverTimeData
+    .filter(item => item.name !== 'Within Tenure')
+    .reduce((sum, item) => sum + item.amount, 0);
+  
+  const nplAmount = ArrearsOverTimeData
+    .filter(item => {
+      return ['91-120 days in arrears', '121-150 days in arrears', 
+              '151-180 days in arrears', '181+ days in arrears'].includes(item.name);
+    })
+    .reduce((sum, item) => sum + item.amount, 0);
+  
+  const totalOverdueRate = (totalOverdue / totalNetOutstanding) * 100;
+  const nplRate = (nplAmount / totalNetOutstanding) * 100;
+  
+  return {
+    totalNetOutstanding,
+    totalOverdueRate,
+    nplRate,
+    performingRate: 100 - nplRate
+  };
+};
+
+const metrics = calculateMetrics();
+
+// Using our calculated values from data analysis
 const totalOverdueRateData = [
-  { name: 'Overdue', value: 69.88 },
-  { name: 'Within Tenure', value: 30.12 }
+  { name: 'Overdue', value: metrics.totalOverdueRate },
+  { name: 'Within Tenure', value: 100 - metrics.totalOverdueRate }
 ];
 
 // NPL rate - 90+ days in arrears
 const nplRateData = [
-  { name: 'NPL', value: 38.19 },
-  { name: 'Performing', value: 61.81 }
+  { name: 'NPL', value: metrics.nplRate },
+  { name: 'Performing', value: metrics.performingRate }
 ];
 
 const COLORS = {
@@ -72,7 +101,7 @@ const RecoveryRateDashboard = () => {
                   <Cell key={`cell-${index}`} fill={COLORS.overdue[index]} />
                 ))}
               </Pie>
-              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold">
+              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fontSize="16" fontWeight="bold">
                 {totalOverdueRateData[0].value.toFixed(2) + '%'}
               </text>
             </PieChart>
@@ -100,7 +129,7 @@ const RecoveryRateDashboard = () => {
                   <Cell key={`cell-${index}`} fill={COLORS.npl[index]} />
                 ))}
               </Pie>
-              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="text-2xl font-bold">
+              <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fontSize="16" fontWeight="bold">
                 {nplRateData[0].value.toFixed(2) + '%'} 
               </text>
             </PieChart>
@@ -108,25 +137,23 @@ const RecoveryRateDashboard = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-6">
         {/* Loan Type Balance and Recovery Chart */}
         <div className="bg-white shadow-md rounded-lg p-4 h-96">
           <h2 className="text-xl font-semibold mb-4">Loan Type Performance</h2>
           <ResponsiveContainer width="100%" height="90%">
-            <BarChart data={loanTypeData} margin={{ left: 20 }}>
+            <BarChart data={loanTypeData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis 
                 tickFormatter={formatNumber}
-                width={80}
-                label={{ value: 'Amount (ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
+                width={60}
               />
               <Tooltip 
-                formatter={(value, name) => {
-                  if (typeof value === 'number') {
-                    return [new Intl.NumberFormat('en-US').format(value), name];
-                  }
-                  return [value, name];
+                formatter={(value) => {
+                  return typeof value === 'number' 
+                    ? [new Intl.NumberFormat('en-US').format(value), ""] 
+                    : [value, ""];
                 }}
               />
               <Legend />
@@ -140,31 +167,24 @@ const RecoveryRateDashboard = () => {
         <div className="bg-white shadow-md rounded-lg p-4 h-96">
           <h2 className="text-xl font-semibold mb-4">Arrears Distribution Over Time</h2>
           <ResponsiveContainer width="100%" height="85%">
-            <BarChart data={ArrearsOverTimeData} margin={{ left: 20, bottom: 50 }}>
+            <BarChart data={ArrearsOverTimeData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name" 
                 angle={-45} 
                 textAnchor="end" 
-                interval={0} 
-                height={100}
-                tick={{
-                  dx: -10,
-                  dy: 10,
-                  fontSize: '0.75rem'
-                }}
+                height={80}
+                tick={{ fontSize: 12 }}
               />
               <YAxis 
                 tickFormatter={formatNumber}
-                width={80}
-                label={{ value: 'Amount(ZMW)', angle: -90, position: 'insideLeft', offset: 10 }}
+                width={60}
               />
               <Tooltip 
-                formatter={(value, name) => {
-                  if (typeof value === 'number') {
-                    return [new Intl.NumberFormat('en-US').format(value), name];
-                  }
-                  return [value, name];
+                formatter={(value) => {
+                  return typeof value === 'number' 
+                    ? [new Intl.NumberFormat('en-US').format(value), ""] 
+                    : [value, ""];
                 }}
               />
               <Bar dataKey="amount" fill="#ffc658" name="Arrears Amount" />
@@ -203,6 +223,25 @@ const RecoveryRateDashboard = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      </div>
+      
+      {/* Summary Stats */}
+      <div className="bg-white shadow-md rounded-lg p-4">
+        <h2 className="text-xl font-semibold mb-4">Summary Statistics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 border rounded-lg text-center">
+            <h3 className="font-semibold text-gray-600">Total Overdue Rate</h3>
+            <p className="text-2xl font-bold text-red-500">{metrics.totalOverdueRate.toFixed(2)}%</p>
+          </div>
+          <div className="p-4 border rounded-lg text-center">
+            <h3 className="font-semibold text-gray-600">NPL Rate</h3>
+            <p className="text-2xl font-bold text-red-500">{metrics.nplRate.toFixed(2)}%</p>
+          </div>
+          <div className="p-4 border rounded-lg text-center">
+            <h3 className="font-semibold text-gray-600">Performing Rate</h3>
+            <p className="text-2xl font-bold text-green-500">{metrics.performingRate.toFixed(2)}%</p>
+          </div>
         </div>
       </div>
     </div>
