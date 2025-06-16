@@ -132,7 +132,7 @@ const App = () => {
                 <Legend />
                 <Line 
                   type="monotone" 
-                  dataKey="unique_users" 
+                  dataKey="Unique_Users" 
                   stroke="#8884d8" 
                   activeDot={{ r: 8 }} 
                 />

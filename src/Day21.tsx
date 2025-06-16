@@ -75,7 +75,7 @@ const Day21 = () => {
         {/* Dashboard Content */}
         <div className="flex-grow p-4 bg-white">
           <h1 className="text-2xl font-bold mb-6 text-center text-green-700 w-full">
-            14 Day Loan Performance Dashboard
+            21 Day Loan Performance Dashboard
           </h1>
 
           <DashboardCard title="Daily Disbursements">
