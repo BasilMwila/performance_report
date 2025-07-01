@@ -3,42 +3,42 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 // Prepare data for visualization
 const loanTypeData = [
-  { name: '7 Days Loan', outstandingBalance: 987061, totalRecovered: 6465510, unrecoveredPercentage: 13.26 },
-  { name: '14 Days Loan', outstandingBalance: 2417143, totalRecovered: 9902194, unrecoveredPercentage: 19.62 },
-  { name: '21 Days Loan', outstandingBalance: 843681, totalRecovered: 3360435, unrecoveredPercentage: 20.07 },
-  { name: '30 Days Loan', outstandingBalance: 5471605, totalRecovered: 17602405, unrecoveredPercentage: 23.71 },
-  { name: 'Total Balance', outstandingBalance: 9720390, totalRecovered: 37330544, unrecoveredPercentage: 20.66 }
+  { name: '7 Days Loan', outstandingBalance: 907408, totalRecovered: 6724168, unrecoveredPercentage: 11.89 },
+  { name: '14 Days Loan', outstandingBalance: 2194569, totalRecovered: 10400198, unrecoveredPercentage: 17.42 },
+  { name: '21 Days Loan', outstandingBalance: 732051, totalRecovered: 3543005, unrecoveredPercentage: 17.12 },
+  { name: '30 Days Loan', outstandingBalance: 5381649, totalRecovered: 18534858, unrecoveredPercentage: 22.50 },
+  { name: 'Total Balance', outstandingBalance: 9215677, totalRecovered: 39202229, unrecoveredPercentage: 19.03 }
 ];
 
 const ArrearsOverTimeData = [
-  { name: 'Within Tenure', amount:  3278598 },
-  { name: '30 days in arrears', amount: 1327925 },
-  { name: '31-60 days in arrears', amount: 706659 },
-  { name: '61-90 days in arrears', amount: 413794 },
-  { name: '91-120 days in arrears', amount: 439720 },
-  { name: '121-150 days in arrears', amount: 442654 },
-  { name: '151-180 days in arrears', amount: 593835 },
-  { name: '181+ days in arrears', amount: 2517205 }
+  { name: 'Within Tenure', amount:  3416533 },
+  { name: '30 days in arrears', amount: 1043915 },
+  { name: '31-60 days in arrears', amount: 640934 },
+  { name: '61-90 days in arrears', amount: 399149 },
+  { name: '91-120 days in arrears', amount: 371816 },
+  { name: '121-150 days in arrears', amount: 403941 },
+  { name: '151-180 days in arrears', amount: 464398 },
+  { name: '181+ days in arrears', amount: 2474991 }
 ];
 
 // Calculate actual total values from the data
 const calculateMetrics = () => {
   const totalNetOutstanding = ArrearsOverTimeData.reduce((sum, item) => sum + item.amount, 0);
-  
+
   const totalOverdue = ArrearsOverTimeData
     .filter(item => item.name !== 'Within Tenure')
     .reduce((sum, item) => sum + item.amount, 0);
-  
+
   const nplAmount = ArrearsOverTimeData
     .filter(item => {
       return ['91-120 days in arrears', '121-150 days in arrears', 
               '151-180 days in arrears', '181+ days in arrears'].includes(item.name);
     })
     .reduce((sum, item) => sum + item.amount, 0);
-  
+
   const totalOverdueRate = (totalOverdue / totalNetOutstanding) * 100;
   const nplRate = (nplAmount / totalNetOutstanding) * 100;
-  
+
   return {
     totalNetOutstanding,
     totalOverdueRate,
@@ -77,7 +77,7 @@ const RecoveryRateDashboard = () => {
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
-      
+
       {/* Dial Charts Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Total Overdue Rate Dial */}
@@ -107,7 +107,7 @@ const RecoveryRateDashboard = () => {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        
+
         {/* NPL Rate Dial */}
         <div className="bg-white shadow-md rounded-lg p-4 h-64">
           <h2 className="text-xl font-semibold mb-2 text-center">NPL Rate</h2>
@@ -130,13 +130,13 @@ const RecoveryRateDashboard = () => {
                 ))}
               </Pie>
               <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" fontSize="16" fontWeight="bold">
-                {nplRateData[0].value.toFixed(2) + '%'} 
+                {nplRateData[0].value.toFixed(2) + '%'}
               </text>
             </PieChart>
           </ResponsiveContainer>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 gap-6">
         {/* Loan Type Balance and Recovery Chart */}
         <div className="bg-white shadow-md rounded-lg p-4 h-96">
@@ -145,14 +145,14 @@ const RecoveryRateDashboard = () => {
             <BarChart data={loanTypeData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis 
+              <YAxis
                 tickFormatter={formatNumber}
                 width={60}
               />
-              <Tooltip 
+              <Tooltip
                 formatter={(value) => {
-                  return typeof value === 'number' 
-                    ? [new Intl.NumberFormat('en-US').format(value), ""] 
+                  return typeof value === 'number'
+                    ? [new Intl.NumberFormat('en-US').format(value), ""]
                     : [value, ""];
                 }}
               />
