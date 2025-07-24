@@ -7,7 +7,7 @@ const loanTypeData = [
   { name: '14 Days Loan', outstandingBalance: 2308361, totalRecovered: 11851638, unrecoveredPercentage: 16.30 },
   { name: '21 Days Loan', outstandingBalance: 786780, totalRecovered: 3943402, unrecoveredPercentage: 16.63 },
   { name: '30 Days Loan', outstandingBalance: 5492898, totalRecovered: 20930017, unrecoveredPercentage: 20.79 },
-  { name: 'Total Balance', outstandingBalance: 946188, totalRecovered: 44327019, unrecoveredPercentage: 17.59 }
+  { name: 'Total Balance', outstandingBalance: 9461888, totalRecovered: 44327019, unrecoveredPercentage: 17.59 }
 ];
 
 const ArrearsOverTimeData = [
