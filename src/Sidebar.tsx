@@ -27,7 +27,7 @@ const Sidebar = () => {
         <div className="relative z-10">
           {/* Logo */}
           <div className="flex items-center justify-center mb-6">
-            <img src="/Emerald_Logo_Web1.png" alt="Emerald Finance" className="h-36 w-48" />
+            <img src="/Emerald_Logo_Web1.png" alt="Emerald Finance" className="h-36 w-56" />
           </div>
 
           {/* Navigation Links */}
