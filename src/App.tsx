@@ -8,6 +8,7 @@ import Day21 from "./Day21";
 import Day30 from "./Day30";
 import OverallPerf from "./OverallPerf";
 import NPL from "./NPL";
+
 function App() {
   return (
     <Router>
@@ -16,15 +17,17 @@ function App() {
         <Sidebar />
 
         {/* Main content changes based on route */}
-        <div className="flex-grow">
+        <div className="flex-grow overflow-auto">
           <Routes>
-            <Route path="/" element={< OverallPerf/>} />
+            <Route path="/" element={<OverallPerf />} />
+            <Route path="/overall" element={<OverallPerf />} />
             <Route path="/day7" element={<Day7 />} />
             <Route path="/day14" element={<Day14 />} />
             <Route path="/day21" element={<Day21 />} /> 
             <Route path="/day30" element={<Day30 />} />
-            <Route path="/NPL" element={<NPL />} />
-            {/* Add more routes as needed */}
+            <Route path="/npl" element={<NPL />} />
+            {/* Fallback route */}
+            <Route path="*" element={<OverallPerf />} />
           </Routes>
         </div>
       </div>

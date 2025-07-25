@@ -1,69 +1,19 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useFetchNPLData } from "./hooks/useFetchFromAPI"; // Updated to use API fetching
 
-// Prepare data for visualization
-const loanTypeData = [
-  { name: '7 Days Loan', outstandingBalance: 873849, totalRecovered: 7601962, unrecoveredPercentage: 10.31 },
-  { name: '14 Days Loan', outstandingBalance: 2308361, totalRecovered: 11851638, unrecoveredPercentage: 16.30 },
-  { name: '21 Days Loan', outstandingBalance: 786780, totalRecovered: 3943402, unrecoveredPercentage: 16.63 },
-  { name: '30 Days Loan', outstandingBalance: 5492898, totalRecovered: 20930017, unrecoveredPercentage: 20.79 },
-  { name: 'Total Balance', outstandingBalance: 9461888, totalRecovered: 44327019, unrecoveredPercentage: 17.59 }
-];
-
-const ArrearsOverTimeData = [
-  { name: 'Within Tenure', amount:  4441377 },
-  { name: '30 days in arrears', amount: 1077824 },
-  { name: '31-60 days in arrears', amount: 407718 },
-  { name: '61-90 days in arrears', amount: 353860 },
-  { name: '91-120 days in arrears', amount: 250854 },
-  { name: '121-150 days in arrears', amount: 303382 },
-  { name: '151-180 days in arrears', amount: 317789 },
-  { name: '181+ days in arrears', amount: 2309084 }
-];
-
-// Calculate actual total values from the data
-const calculateMetrics = () => {
-  const totalNetOutstanding = ArrearsOverTimeData.reduce((sum, item) => sum + item.amount, 0);
-
-  const totalOverdue = ArrearsOverTimeData
-    .filter(item => item.name !== 'Within Tenure')
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  const nplAmount = ArrearsOverTimeData
-    .filter(item => {
-      return ['91-120 days in arrears', '121-150 days in arrears', 
-              '151-180 days in arrears', '181+ days in arrears'].includes(item.name);
-    })
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  const totalOverdueRate = (totalOverdue / totalNetOutstanding) * 100;
-  const nplRate = (nplAmount / totalNetOutstanding) * 100;
-
-  return {
-    totalNetOutstanding,
-    totalOverdueRate,
-    nplRate,
-    performingRate: 100 - nplRate
-  };
-};
-
-const metrics = calculateMetrics();
-
-// Using our calculated values from data analysis
-const totalOverdueRateData = [
-  { name: 'Overdue', value: metrics.totalOverdueRate },
-  { name: 'Within Tenure', value: 100 - metrics.totalOverdueRate }
-];
-
-// NPL rate - 90+ days in arrears
-const nplRateData = [
-  { name: 'NPL', value: metrics.nplRate },
-  { name: 'Performing', value: metrics.performingRate }
-];
-
-const COLORS = {
-  overdue: ['#ff6b6b', '#74b9ff'],
-  npl: ['#ff4757', '#7bed9f']
+// Helper function to safely format values in tooltips
+const formatTooltipValue = (value: any): [string, string] => {
+  if (typeof value === 'number') {
+    return [new Intl.NumberFormat('en-US').format(value), ""];
+  } else if (typeof value === 'string') {
+    const numValue = parseFloat(value.replace(/,/g, ''));
+    if (!isNaN(numValue)) {
+      return [new Intl.NumberFormat('en-US').format(numValue), ""];
+    }
+    return [value, ""];
+  }
+  return [String(value), ""];
 };
 
 const formatNumber = (value) => {
@@ -73,7 +23,72 @@ const formatNumber = (value) => {
   }).format(value);
 };
 
+const COLORS = {
+  overdue: ['#ff6b6b', '#74b9ff'],
+  npl: ['#ff4757', '#7bed9f']
+};
+
 const RecoveryRateDashboard = () => {
+  // Use the specialized NPL API hook
+  const { loanTypeData, arrearsOverTimeData, loading, error } = useFetchNPLData();
+
+  if (loading) {
+    return (
+      <div className="p-4 space-y-6">
+        <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
+        <div className="text-center">Loading NPL data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 space-y-6">
+        <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
+        <div className="text-center text-red-600">Error loading NPL data: {error}</div>
+      </div>
+    );
+  }
+
+  // Calculate metrics from API data
+  const calculateMetrics = () => {
+    const totalNetOutstanding = arrearsOverTimeData.reduce((sum, item) => sum + item.amount, 0);
+
+    const totalOverdue = arrearsOverTimeData
+      .filter(item => item.name !== 'Within Tenure')
+      .reduce((sum, item) => sum + item.amount, 0);
+
+    const nplAmount = arrearsOverTimeData
+      .filter(item => {
+        return ['91-120 days in arrears', '121-150 days in arrears', 
+                '151-180 days in arrears', '181+ days in arrears'].includes(item.name);
+      })
+      .reduce((sum, item) => sum + item.amount, 0);
+
+    const totalOverdueRate = totalNetOutstanding > 0 ? (totalOverdue / totalNetOutstanding) * 100 : 0;
+    const nplRate = totalNetOutstanding > 0 ? (nplAmount / totalNetOutstanding) * 100 : 0;
+
+    return {
+      totalNetOutstanding,
+      totalOverdueRate,
+      nplRate,
+      performingRate: 100 - nplRate
+    };
+  };
+
+  const metrics = calculateMetrics();
+
+  // Create dial chart data
+  const totalOverdueRateData = [
+    { name: 'Overdue', value: metrics.totalOverdueRate },
+    { name: 'Within Tenure', value: 100 - metrics.totalOverdueRate }
+  ];
+
+  const nplRateData = [
+    { name: 'NPL', value: metrics.nplRate },
+    { name: 'Performing', value: metrics.performingRate }
+  ];
+
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
@@ -149,13 +164,7 @@ const RecoveryRateDashboard = () => {
                 tickFormatter={formatNumber}
                 width={60}
               />
-              <Tooltip
-                formatter={(value) => {
-                  return typeof value === 'number'
-                    ? [new Intl.NumberFormat('en-US').format(value), ""]
-                    : [value, ""];
-                }}
-              />
+              <Tooltip formatter={formatTooltipValue} />
               <Legend />
               <Bar dataKey="outstandingBalance" fill="#8884d8" name="Outstanding Balance" />
               <Bar dataKey="totalRecovered" fill="#82ca9d" name="Total Recovered" />
@@ -167,7 +176,7 @@ const RecoveryRateDashboard = () => {
         <div className="bg-white shadow-md rounded-lg p-4 h-96">
           <h2 className="text-xl font-semibold mb-4">Arrears Distribution Over Time</h2>
           <ResponsiveContainer width="100%" height="85%">
-            <BarChart data={ArrearsOverTimeData}>
+            <BarChart data={arrearsOverTimeData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="name" 
@@ -180,13 +189,7 @@ const RecoveryRateDashboard = () => {
                 tickFormatter={formatNumber}
                 width={60}
               />
-              <Tooltip 
-                formatter={(value) => {
-                  return typeof value === 'number' 
-                    ? [new Intl.NumberFormat('en-US').format(value), ""] 
-                    : [value, ""];
-                }}
-              />
+              <Tooltip formatter={formatTooltipValue} />
               <Bar dataKey="amount" fill="#ffc658" name="Arrears Amount" />
             </BarChart>
           </ResponsiveContainer>

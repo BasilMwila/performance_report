@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { Calendar, Home, Menu } from "lucide-react";
+import { Calendar, Home, Menu, BarChart, TrendingUp } from "lucide-react";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,13 +33,13 @@ const Sidebar = () => {
           {/* Navigation Links */}
           <nav className="flex flex-col gap-2">
             {[
-              { to: "/day7", label: "7-Day Metrics" },
-              { to: "/day14", label: "14-Day Metrics" },
-              { to: "/day21", label: "21-Day Metrics" },
-              { to: "/day30", label: "30-Day Metrics" },
               { to: "/", label: "Overall Performance", icon: Home },
-              { to: "/NPL", label: "NPL Report" },
-            ].map(({ to, label }, index) => (
+              { to: "/day7", label: "7-Day Metrics", icon: Calendar },
+              { to: "/day14", label: "14-Day Metrics", icon: Calendar },
+              { to: "/day21", label: "21-Day Metrics", icon: Calendar },
+              { to: "/day30", label: "30-Day Metrics", icon: Calendar },
+              { to: "/npl", label: "NPL Report", icon: BarChart },
+            ].map(({ to, label, icon: Icon }, index) => (
               <NavLink
                 key={index}
                 to={to}
@@ -50,7 +50,7 @@ const Sidebar = () => {
                 }
                 onClick={() => setIsOpen(false)}
               >
-                <Calendar size={20} /> {label}
+                <Icon size={20} /> {label}
               </NavLink>
             ))}
           </nav>

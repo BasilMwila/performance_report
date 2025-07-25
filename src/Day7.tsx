@@ -15,7 +15,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import useFetch from "./hooks/useFetch";
+import { useFetch } from "./hooks/useFetchFromAPI"; // Updated to use API fetching
 import { Calendar, Home } from "lucide-react";
 
 const DashboardCard = ({ title, children }) => (
@@ -30,9 +30,24 @@ DashboardCard.propTypes = {
   children: PropTypes.node.isRequired,
 };
 
+// Helper function to safely format values in tooltips
+const formatTooltipValue = (value: any): [string, string] => {
+  if (typeof value === 'number') {
+    return [new Intl.NumberFormat('en-US').format(value), ""];
+  } else if (typeof value === 'string') {
+    // Try to parse as number first
+    const numValue = parseFloat(value.replace(/,/g, ''));
+    if (!isNaN(numValue)) {
+      return [new Intl.NumberFormat('en-US').format(numValue), ""];
+    }
+    return [value, ""];
+  }
+  return [String(value), ""];
+};
+
 const Day7 = () => {
-  // Update the file path to the new data file
-  const { data } = useFetch("/DataNew7.csv");
+  // Updated to use API data fetching for 7-day loans
+  const { data, loading, error } = useFetch("/DataNew7.csv"); // This will be mapped to API endpoint for 7-day loans
   const [user, setUser] = useState(null);
   
   useEffect(() => {
@@ -41,7 +56,35 @@ const Day7 = () => {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, [data]);
 
-  // Update calculations to use the new field names
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="p-4 bg-white flex flex-col w-full">
+        <div className="flex-grow p-4 bg-white">
+          <h1 className="text-2xl font-bold mb-6 text-center text-green-700 w-full">
+            7 Day Loan Performance Dashboard
+          </h1>
+          <div className="text-center">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-4 bg-white flex flex-col w-full">
+        <div className="flex-grow p-4 bg-white">
+          <h1 className="text-2xl font-bold mb-6 text-center text-green-700 w-full">
+            7 Day Loan Performance Dashboard
+          </h1>
+          <div className="text-center text-red-600">Error loading data: {error}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Update calculations to use the new field names from API
   const calculateRevenueData = data.map((item) => ({
     Date: item.date, // Updated field name from Date to date
     Revenue: 
@@ -66,7 +109,9 @@ const Day7 = () => {
     "Late Fees Recovered": item.late_fees_recovered || 0,
     // Include new fields
     "Setup Fees Recovered": item.setup_fees_recovered || 0,
-    "Interest Fees Recovered": item.interest_fees_recovered || 0
+    "Interest Fees Recovered": item.interest_fees_recovered || 0,
+    "Unique Users": item.unique_users || 0,
+    "Overall Unique Users": item.overall_unique_users || 0
   }));
 
   return (
@@ -84,7 +129,7 @@ const Day7 = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="Date" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip formatter={formatTooltipValue} />
                 <Legend />
                 <Bar dataKey="Gross Lent" fill="#8884d8" />
               </BarChart>
@@ -97,7 +142,7 @@ const Day7 = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="Date" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip formatter={formatTooltipValue} />
                 <Legend />
                 <Bar dataKey="Gross Recovered" fill="#34a853" />
                 <Bar dataKey="Principal Recovered" fill="#4285f4" />
@@ -114,15 +159,49 @@ const Day7 = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="Date" />
                 <YAxis />
-                <Tooltip />
+                <Tooltip formatter={formatTooltipValue} />
                 <Legend />
                 <Bar dataKey="Revenue" fill="#8884d8" />
               </BarChart>
             </ResponsiveContainer>
           </DashboardCard>
 
+          <DashboardCard title="Non-Performing Loans (NPL)">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={calculateNPLData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="Date" />
+                <YAxis />
+                <Tooltip formatter={formatTooltipValue} />
+                <Legend />
+                <Line type="monotone" dataKey="NPL" stroke="#ff7300" />
+              </LineChart>
+            </ResponsiveContainer>
+          </DashboardCard>
+
           {/* New card for unique users */}
-         
+          <DashboardCard title="User Activity">
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="Date" />
+                <YAxis />
+                <Tooltip formatter={formatTooltipValue} />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="Unique Users" 
+                  stroke="#8884d8" 
+                  activeDot={{ r: 8 }} 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="Overall Unique Users" 
+                  stroke="#82ca9d" 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </DashboardCard>
         </div>
       </div>
     </div>
