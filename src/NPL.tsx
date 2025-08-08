@@ -16,7 +16,7 @@ const formatTooltipValue = (value: any): [string, string] => {
   return [String(value), ""];
 };
 
-const formatNumber = (value) => {
+const formatNumber = (value: number) => {
   return new Intl.NumberFormat('en-US', { 
     notation: 'compact',
     compactDisplay: 'short'

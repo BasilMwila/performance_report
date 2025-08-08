@@ -15,8 +15,13 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { useFetch } from "./hooks/useFetchFromAPI"; // Updated to use API fetching
+import { useFetchLoanData } from "./hooks/useFetchFromAPI"; // Updated to use API fetching with date range
 import { Calendar, Home } from "lucide-react";
+import DateRangePicker from "./components/DateRangePicker";
+import LoadingSpinner from "./components/LoadingSpinner";
+import DataDebugger from "./components/DataDebugger";
+import { subDays, format } from "date-fns";
+import { aggregateDataByDate, calculateRevenueData, calculateNPLData, formatChartData, filterValidTransactions } from "./utils/dataAggregation";
 
 const DashboardCard = ({ title, children }) => (
   <div className="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -45,9 +50,20 @@ const formatTooltipValue = (value: any): [string, string] => {
 };
 
 const OverallPerf = () => {
-  // Updated to use API data fetching for all loan types
-  const { data, loading, error } = useFetch("/DataNew.csv");
   const [user, setUser] = useState(null);
+  const [dateRange, setDateRange] = useState({
+    startDate: format(subDays(new Date(), 7), 'yyyy-MM-dd'), // Start with 7 days for better performance
+    endDate: format(new Date(), 'yyyy-MM-dd'),
+  });
+
+  // Updated to use API data fetching with date range filtering
+  // For now, let's focus on Airtel only to match business reports
+  const { data, loading, error } = useFetchLoanData({
+    loanType: 'all',
+    telco: 'airtel', // Focus on Airtel to match business report
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate,
+  });
   
   useEffect(() => {
     console.log("Fetched Data:", data);
@@ -55,14 +71,21 @@ const OverallPerf = () => {
     if (storedUser) setUser(JSON.parse(storedUser));
   }, [data]);
 
+  const handleDateRangeChange = (startDate: string, endDate: string) => {
+    setDateRange({ startDate, endDate });
+  };
+
   if (loading) {
     return (
-      <div className="p-4 bg-white flex flex-col w-full">
-        <div className="flex-grow p-4 bg-white">
-          <h1 className="text-2xl font-bold mb-6 text-center text-green-700 w-full">
+      <div className="p-4 bg-white flex flex-col w-full min-h-screen">
+        <div className="flex-grow flex flex-col items-center justify-center">
+          <h1 className="text-2xl font-bold mb-6 text-green-700">
             Overall Day Loan Performance Dashboard
           </h1>
-          <div className="text-center">Loading...</div>
+          <LoadingSpinner message="Loading dashboard data..." size="lg" />
+          <p className="text-sm text-gray-500 mt-4 text-center max-w-md">
+            Loading data for the selected date range. This may take a moment for large datasets.
+          </p>
         </div>
       </div>
     );
@@ -81,44 +104,68 @@ const OverallPerf = () => {
     );
   }
 
-  // Update calculations to use the new field names
-  const calculateRevenueData = data.map((item) => ({
-    Date: item.date,
-    Revenue: 
-      (item.service_fee_recovered || 0) + 
-      (item.late_fees_recovered || 0) + 
-      (item.setup_fees_recovered || 0) + 
-      (item.interest_fees_recovered || 0),
-  }));
+  // Aggregate data by date - sum all loan amount segments (100, 200, 500 TCL) for each day
+  const aggregatedData = aggregateDataByDate(data);
 
-  const calculateNPLData = data.map((item) => ({
-    Date: item.date,
-    NPL: (item.gross_lent || 0) - (item.gross_recovered || 0),
-  }));
+  // Handle empty data case
+  if (!loading && !error && aggregatedData.length === 0) {
+    return (
+      <div className="p-4 bg-white flex flex-col w-full min-h-screen">
+        <div className="flex-grow p-4 bg-white">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
+            <h1 className="text-2xl font-bold text-green-700">
+              Overall Day Loan Performance Dashboard
+            </h1>
+            <div className="flex-shrink-0">
+              <DateRangePicker
+                onDateRangeChange={handleDateRangeChange}
+                initialStartDate={subDays(new Date(), 7)}
+                initialEndDate={new Date()}
+              />
+            </div>
+          </div>
+          <div className="text-center p-8">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-yellow-800 mb-2">No Data Available</h3>
+              <p className="text-yellow-700">
+                No data found for the selected date range. Try selecting a different date range or check if data is available for this period.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  // Format data for charts
-  const chartData = data.map((item) => ({
-    Date: item.date,
-    "Gross Lent": item.gross_lent || 0,
-    "Gross Recovered": item.gross_recovered || 0,
-    "Principal Recovered": item.principal_recovered || 0,
-    "Service Fee Recovered": item.service_fee_recovered || 0,
-    "Late Fees Recovered": item.late_fees_recovered || 0,
-    "Setup Fees Recovered": item.setup_fees_recovered || 0,
-    "Interest Fees Recovered": item.interest_fees_recovered || 0,
-    "Unique_Users": item.unique_users || 0,
-    "Overall_Unique_Users": item.overall_unique_users || 0
-  }));
+  // Use utility functions for calculations
+  const revenueData = calculateRevenueData(aggregatedData);
+  const nplData = calculateNPLData(aggregatedData);
+  const chartData = formatChartData(aggregatedData);
 
   return (
     <div className="p-4 bg-white flex flex-col w-full">
       <div className="flex h-screen">
         <div className="flex-grow p-4 bg-white">
-          <h1 className="text-2xl font-bold mb-6 text-center text-green-700 w-full">
-            Overall Day Loan Performance Dashboard
-          </h1>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
+            <h1 className="text-2xl font-bold text-green-700">
+              Overall Day Loan Performance Dashboard
+            </h1>
+            <div className="flex-shrink-0">
+              <DateRangePicker
+                onDateRangeChange={handleDateRangeChange}
+                initialStartDate={subDays(new Date(), 7)}
+                initialEndDate={new Date()}
+              />
+            </div>
+          </div>
 
-          <DashboardCard title="Daily Disbursements">
+          <DataDebugger 
+            data={data} 
+            aggregatedData={aggregatedData} 
+            title={`Overall Performance Data (${filterValidTransactions(data).length} valid of ${data.length} total records)`}
+          />
+
+          <DashboardCard title="Daily Disbursements (Total Across All Loan Amounts)">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -126,12 +173,13 @@ const OverallPerf = () => {
                 <YAxis />
                 <Tooltip formatter={formatTooltipValue} />
                 <Legend />
-                <Bar dataKey="Gross Lent" fill="#8884d8" />
+                <Bar dataKey="Gross Lent" fill="#8884d8" name="Total Gross Lent" />
+                <Bar dataKey="Principal Lent" fill="#82ca9d" name="Total Principal Lent" />
               </BarChart>
             </ResponsiveContainer>
           </DashboardCard>
 
-          <DashboardCard title="Recovery Performance">
+          <DashboardCard title="Recovery Performance (Total Across All Loan Amounts)">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -139,41 +187,41 @@ const OverallPerf = () => {
                 <YAxis />
                 <Tooltip formatter={formatTooltipValue} />
                 <Legend />
-                <Bar dataKey="Gross Recovered" fill="#34a853" />
-                <Bar dataKey="Principal Recovered" fill="#4285f4" />
-                <Bar dataKey="Service Fee Recovered" fill="#fbbc05" />
-                <Bar dataKey="Late Fees Recovered" fill="#ea4335" />
+                <Bar dataKey="Gross Recovered" fill="#34a853" name="Total Gross Recovered" />
+                <Bar dataKey="Principal Recovered" fill="#4285f4" name="Total Principal Recovered" />
+                <Bar dataKey="Service Fee Recovered" fill="#fbbc05" name="Total Service Fee Recovered" />
+                <Bar dataKey="Late Fees Recovered" fill="#ea4335" name="Total Late Fees Recovered" />
               </BarChart>
             </ResponsiveContainer>
           </DashboardCard>
 
-          <DashboardCard title="Daily Revenue">
+          <DashboardCard title="Daily Revenue (Total Across All Loan Amounts)">
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={calculateRevenueData}>
+              <BarChart data={revenueData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="Date" />
                 <YAxis />
                 <Tooltip formatter={formatTooltipValue} />
                 <Legend />
-                <Bar dataKey="Revenue" fill="#8884d8" />
+                <Bar dataKey="Revenue" fill="#8884d8" name="Total Daily Revenue" />
               </BarChart>
             </ResponsiveContainer>
           </DashboardCard>
 
-          <DashboardCard title="Non-Performing Loans (NPL)">
+          <DashboardCard title="Non-Performing Loans (NPL) - Total Across All Loan Amounts">
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={calculateNPLData}>
+              <LineChart data={nplData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="Date" />
                 <YAxis />
                 <Tooltip formatter={formatTooltipValue} />
                 <Legend />
-                <Line type="monotone" dataKey="NPL" stroke="#ff7300" />
+                <Line type="monotone" dataKey="NPL" stroke="#ff7300" name="Total NPL (Lent - Recovered)" strokeWidth={3} />
               </LineChart>
             </ResponsiveContainer>
           </DashboardCard>
 
-          <DashboardCard title="User Activity">
+          <DashboardCard title="Daily Unique Users">
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -181,16 +229,47 @@ const OverallPerf = () => {
                 <YAxis />
                 <Tooltip formatter={formatTooltipValue} />
                 <Legend />
+                
                 <Line 
                   type="monotone" 
                   dataKey="Unique_Users" 
                   stroke="#8884d8" 
-                  activeDot={{ r: 8 }} 
+                  name="Daily Unique Users"
+                  activeDot={{ r: 8 }}
+                  strokeWidth={3}
                 />
+              </LineChart>
+            </ResponsiveContainer>
+          </DashboardCard>
+
+          <DashboardCard title="User Activity & Qualified Base">
+            <ResponsiveContainer width="100%" height={350}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="Date" />
+                <YAxis yAxisId="left" orientation="left" />
+                <YAxis yAxisId="right" orientation="right" />
+                <Tooltip formatter={formatTooltipValue} />
+                <Legend />
+                
+                {/* Qualified Base on left axis */}
                 <Line 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="Qualified_Base" 
+                  stroke="#ff7300" 
+                  name="Qualified Base"
+                  strokeWidth={2}
+                />
+                
+                {/* Overall Unique Users on right axis */}
+                <Line 
+                  yAxisId="right"
                   type="monotone" 
                   dataKey="Overall_Unique_Users" 
                   stroke="#82ca9d" 
+                  name="Overall Unique Users"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>

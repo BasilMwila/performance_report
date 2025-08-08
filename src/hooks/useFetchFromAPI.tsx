@@ -220,7 +220,7 @@ export const useFetch = (filePath: string) => {
 export const useFetchLoanData = (options: FetchOptions = {}) => {
   return useFetchFromAPI('loan-data', {
     telco: 'both',
-    days: 30,
+    days: 7, // Default to smaller dataset for better performance
     ...options
   });
 };
