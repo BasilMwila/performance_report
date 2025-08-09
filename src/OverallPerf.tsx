@@ -11,17 +11,12 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import { useFetchLoanData } from "./hooks/useFetchFromAPI"; // Updated to use API fetching with date range
-import { Calendar, Home } from "lucide-react";
 import DateRangePicker from "./components/DateRangePicker";
 import LoadingSpinner from "./components/LoadingSpinner";
-import DataDebugger from "./components/DataDebugger";
 import { subDays, format } from "date-fns";
-import { aggregateDataByDate, calculateRevenueData, calculateNPLData, formatChartData, filterValidTransactions } from "./utils/dataAggregation";
+import { aggregateDataByDate, calculateRevenueData, formatChartData, filterValidTransactions } from "./utils/dataAggregation";
 
 const DashboardCard = ({ title, children }) => (
   <div className="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -139,7 +134,6 @@ const OverallPerf = () => {
 
   // Use utility functions for calculations
   const revenueData = calculateRevenueData(aggregatedData);
-  const nplData = calculateNPLData(aggregatedData);
   const chartData = formatChartData(aggregatedData);
 
   return (
@@ -159,11 +153,6 @@ const OverallPerf = () => {
             </div>
           </div>
 
-          <DataDebugger 
-            data={data} 
-            aggregatedData={aggregatedData} 
-            title={`Overall Performance Data (${filterValidTransactions(data).length} valid of ${data.length} total records)`}
-          />
 
           <DashboardCard title="Daily Disbursements (Total Across All Loan Amounts)">
             <ResponsiveContainer width="100%" height={300}>
@@ -208,18 +197,6 @@ const OverallPerf = () => {
             </ResponsiveContainer>
           </DashboardCard>
 
-          <DashboardCard title="Non-Performing Loans (NPL) - Total Across All Loan Amounts">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={nplData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Date" />
-                <YAxis />
-                <Tooltip formatter={formatTooltipValue} />
-                <Legend />
-                <Line type="monotone" dataKey="NPL" stroke="#ff7300" name="Total NPL (Lent - Recovered)" strokeWidth={3} />
-              </LineChart>
-            </ResponsiveContainer>
-          </DashboardCard>
 
           <DashboardCard title="Daily Unique Users">
             <ResponsiveContainer width="100%" height={300}>

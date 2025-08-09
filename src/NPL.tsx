@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useFetchNPLData } from "./hooks/useFetchFromAPI"; // Updated to use API fetching
+import DateRangePicker from "./components/DateRangePicker";
+import { subDays, format } from "date-fns";
 
 // Helper function to safely format values in tooltips
 const formatTooltipValue = (value: any): [string, string] => {
@@ -29,8 +31,21 @@ const COLORS = {
 };
 
 const RecoveryRateDashboard = () => {
-  // Use the specialized NPL API hook
-  const { loanTypeData, arrearsOverTimeData, loading, error } = useFetchNPLData();
+  // Add state for date range filtering
+  const [dateRange, setDateRange] = useState({
+    startDate: format(subDays(new Date(), 30), 'yyyy-MM-dd'), // Default to last 30 days
+    endDate: format(new Date(), 'yyyy-MM-dd'),
+  });
+
+  // Use the specialized NPL API hook with date filtering
+  const { loanTypeData, arrearsOverTimeData, loading, error } = useFetchNPLData({
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate
+  });
+
+  const handleDateRangeChange = (startDate: string, endDate: string) => {
+    setDateRange({ startDate, endDate });
+  };
 
   if (loading) {
     return (
@@ -50,7 +65,11 @@ const RecoveryRateDashboard = () => {
     );
   }
 
-  // Calculate metrics from API data
+  // Debug: Show what data is actually being received
+  console.log('NPL Dashboard - Raw loanTypeData:', loanTypeData);
+  console.log('NPL Dashboard - Raw arrearsOverTimeData:', arrearsOverTimeData);
+
+  // Calculate metrics from database data
   const calculateMetrics = () => {
     const totalNetOutstanding = arrearsOverTimeData.reduce((sum, item) => sum + item.amount, 0);
 
@@ -65,14 +84,18 @@ const RecoveryRateDashboard = () => {
       })
       .reduce((sum, item) => sum + item.amount, 0);
 
+    // Calculate rates from database data
     const totalOverdueRate = totalNetOutstanding > 0 ? (totalOverdue / totalNetOutstanding) * 100 : 0;
     const nplRate = totalNetOutstanding > 0 ? (nplAmount / totalNetOutstanding) * 100 : 0;
+    
+    // Calculate NPL rate from actual database data only
+    const actualNplRate = nplRate;
 
     return {
       totalNetOutstanding,
       totalOverdueRate,
-      nplRate,
-      performingRate: 100 - nplRate
+      nplRate: actualNplRate,
+      performingRate: 100 - actualNplRate
     };
   };
 
@@ -91,7 +114,16 @@ const RecoveryRateDashboard = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-green-700">NPL Report Dashboard</h1>
+        <div className="flex-shrink-0">
+          <DateRangePicker
+            onDateRangeChange={handleDateRangeChange}
+            initialStartDate={subDays(new Date(), 30)}
+            initialEndDate={new Date()}
+          />
+        </div>
+      </div>
 
       {/* Dial Charts Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

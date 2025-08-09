@@ -11,16 +11,12 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import { useFetchLoanData } from "./hooks/useFetchFromAPI"; // Updated to use API fetching with date range
-import { Calendar, Home } from "lucide-react";
 import DateRangePicker from "./components/DateRangePicker";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { subDays, format } from "date-fns";
-import { aggregateDataByDate, calculateRevenueData, calculateNPLData, formatChartData } from "./utils/dataAggregation";
+import { aggregateDataByDate, calculateRevenueData, formatChartData } from "./utils/dataAggregation";
 
 const DashboardCard = ({ title, children }) => (
   <div className="bg-white rounded-lg shadow-md p-4 mb-6">
@@ -107,7 +103,6 @@ const Day7 = () => {
 
   // Use utility functions for calculations
   const revenueData = calculateRevenueData(aggregatedData);
-  const nplData = calculateNPLData(aggregatedData);
   const chartData = formatChartData(aggregatedData);
 
   return (
@@ -171,18 +166,6 @@ const Day7 = () => {
             </ResponsiveContainer>
           </DashboardCard>
 
-          <DashboardCard title="7-Day Loan NPL (Total Across All Amounts)">
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={nplData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="Date" />
-                <YAxis />
-                <Tooltip formatter={formatTooltipValue} />
-                <Legend />
-                <Line type="monotone" dataKey="NPL" stroke="#ff7300" name="Total NPL" strokeWidth={3} />
-              </LineChart>
-            </ResponsiveContainer>
-          </DashboardCard>
 
           <DashboardCard title="7-Day Daily Unique Users">
             <ResponsiveContainer width="100%" height={300}>
