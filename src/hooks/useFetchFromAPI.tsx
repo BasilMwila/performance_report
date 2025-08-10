@@ -28,7 +28,7 @@ type TelcoData = {
 };
 
 // Configuration for API base URL
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:5001/api';
 
 interface FetchOptions {
   loanType?: string;
@@ -102,7 +102,7 @@ const useFetchFromAPI = (endpoint: string, options: FetchOptions = {}) => {
     if (originalEndpoint.includes('npl-tables')) {
       // New endpoint for specific NPL database tables
       const queryParams = buildQueryParams(opts);
-      return `${API_BASE_URL}/npl-tables?${queryParams}`;
+      return `${API_BASE_URL}/npl-tables${queryParams ? `?${queryParams}` : ''}`;
     } else if (originalEndpoint.includes('npl') || originalEndpoint.includes('NPL')) {
       return `${API_BASE_URL}/npl-data`;
     }
@@ -119,7 +119,8 @@ const useFetchFromAPI = (endpoint: string, options: FetchOptions = {}) => {
 
       try {
         const apiEndpoint = getApiEndpoint(endpoint, options);
-        console.log(`Fetching data from: ${apiEndpoint}`);
+        console.log(`Fetching NPL data from: ${apiEndpoint}`);
+        console.log('Request options:', options);
 
         const response = await fetch(apiEndpoint);
         
@@ -128,6 +129,7 @@ const useFetchFromAPI = (endpoint: string, options: FetchOptions = {}) => {
         }
 
         const result = await response.json();
+        console.log('Raw API Response:', result);
         
         // Handle different response formats
         let fetchedData: TelcoData[] = [];
@@ -135,16 +137,23 @@ const useFetchFromAPI = (endpoint: string, options: FetchOptions = {}) => {
         if (result.data) {
           // Standard loan data response
           fetchedData = result.data;
-        } else if (result.npl_data) {
+          console.log('Using result.data, length:', fetchedData.length);
+        } else if (result.npl_data || result.npl_tables_data) {
           // NPL data response - transform to match expected format
-          fetchedData = result.npl_data.map((item: any) => ({
+          const nplData = result.npl_data || result.npl_tables_data;
+          console.log('Using NPL data, length:', nplData.length);
+          console.log('First NPL item:', nplData[0]);
+          fetchedData = nplData.map((item: any) => ({
             date: item.report_date || '',
             telco: 'Airtel', // NPL data is Airtel-specific
             country: 'Zambia',
             loan_type: item.loan_type || '',
+            
+            // Map fields based on EXACT database schema from airtel_npl_outstanding_balance_net_summary
             total_balance: item.total_balance || 0,
+            
+            // Arrears data using the exact column names from your schema
             within_tenure: item.within_tenure || 0,
-            // All arrears buckets for proper NPL calculation
             arrears_30_days: item.arrears_30_days || 0,
             arrears_31_60_days: item.arrears_31_60_days || 0,
             arrears_61_90_days: item.arrears_61_90_days || 0,
@@ -152,9 +161,11 @@ const useFetchFromAPI = (endpoint: string, options: FetchOptions = {}) => {
             arrears_121_150_days: item.arrears_121_150_days || 0,
             arrears_151_180_days: item.arrears_151_180_days || 0,
             arrears_181_plus_days: item.arrears_181_plus_days || 0,
+            
             arrears_percentage: item.arrears_percentage || 0,
-            unrecovered_percentage_net: item.unrecovered_percentage_net || 0,
-            net_recovered_value: item.net_recovered_value || 0,
+            // These will come from other tables that need to be joined
+            unrecovered_percentage_net: item.unrecovered_percentage || item.unrecovered_percentage_net || 0,
+            net_recovered_value: item.net_recovered_value || item.recovered_amount || 0,
             // Default values for missing fields
             qualified_base: 0,
             unique_users: 0,
@@ -178,6 +189,8 @@ const useFetchFromAPI = (endpoint: string, options: FetchOptions = {}) => {
         } else {
           // Fallback - use result directly if it's an array
           fetchedData = Array.isArray(result) ? result : [];
+          console.log('Using fallback array, length:', fetchedData.length);
+          console.log('Result keys:', Object.keys(result));
         }
 
         setData(fetchedData);
@@ -254,8 +267,8 @@ export const useFetchNPLData = (options: { startDate?: string; endDate?: string 
   };
 
   const queryParams = buildNPLQueryParams(options);
-  // Use existing NPL endpoint for now until npl-tables endpoint is created
-  const { data, loading, error } = useFetchFromAPI(`npl-data`);
+  // Use existing npl-data endpoint
+  const { data, loading, error } = useFetchFromAPI(`npl-data${queryParams ? `?${queryParams}` : ''}`);
   
   // Transform NPL data from specific database tables
   // Data will come from:
@@ -264,131 +277,212 @@ export const useFetchNPLData = (options: { startDate?: string; endDate?: string 
   // - airtel_npl_unrecovered_percentage_summary 
   // - airtel_npl_arrears_volume_summary
   
+  // Debug: Log all received data and errors
+  console.log('=== NPL DATABASE DEBUG START ===');
+  console.log('useFetchNPLData - Raw API Response:', { data, loading, error });
+  console.log('useFetchNPLData - Data length:', data ? data.length : 'No data');
+  
+  if (data && data.length > 0) {
+    console.log('=== FULL DATABASE STRUCTURE ===');
+    data.forEach((item, index) => {
+      console.log(`Item ${index + 1}:`, item);
+      console.log(`  Available fields:`, Object.keys(item));
+      console.log(`  loan_type field:`, item.loan_type);
+    });
+    console.log('=== END DATABASE STRUCTURE ===');
+  }
+
   const transformedData = {
     loanTypeData: (() => {
-      // Use actual database data
-      if (data && data.length > 0) {
-        console.log('Loan Type Data received:', data); // Debug log
+      // Add detailed debugging before throwing error
+      if (!data || data.length === 0) {
+        console.error('NPL Data Error - No data received:', { 
+          dataExists: !!data, 
+          dataLength: data ? data.length : 'null/undefined',
+          loadingState: loading,
+          errorState: error 
+        });
+        // Instead of throwing error, return empty array and let component handle it
+        return [];
+      }
+      
+      console.log('NPL Database Data received:', data);
+      
+      const loanTypes = ['7', '14', '21', '30'];
+      
+      const loanTypesData = loanTypes.map((loanType) => {
+        console.log(`\n=== SEARCHING FOR ${loanType} DAYS LOAN ===`);
         
-        const loanTypes = ['7', '14', '21', '30'];
+        const dbData = data.find(item => 
+          item.loan_type === loanType || 
+          item.loan_type === `${loanType} Days Loan` ||
+          item.loan_type === `${loanType}` ||
+          (item.loan_type && item.loan_type.toString().includes(loanType))
+        );
         
-        return loanTypes.map((loanType) => {
-          const dbData = data.find(item => 
-            item.loan_type === loanType || 
-            item.loan_type === `${loanType} Days Loan`
-          );
+        if (!dbData) {
+          console.warn(`❌ Database data missing for ${loanType} Days Loan`);
+          console.warn(`Available loan types:`, data.map(item => item.loan_type));
           
-          console.log(`Data for ${loanType} Days:`, dbData); // Debug log
-          
-          if (dbData) {
-            const result = {
-              name: `${loanType} Days Loan`,
-              outstandingBalance: dbData.total_balance || 0,
-              totalRecovered: dbData.net_recovered_value || 0,
-              unrecoveredPercentage: dbData.unrecovered_percentage_net || 0
-            };
-            
-            console.log(`Transformed data for ${loanType} Days:`, result); // Debug log
-            return result;
-          }
-          
-          // Return zero values if loan type not found in database
           return {
             name: `${loanType} Days Loan`,
             outstandingBalance: 0,
             totalRecovered: 0,
             unrecoveredPercentage: 0
           };
-        });
-      }
+        }
+        
+        console.log(`✅ Found data for ${loanType} Days Loan:`, dbData);
+        console.log(`  Available fields in this record:`, Object.keys(dbData));
+        
+        // Use exact field mappings from the database schema
+        const outstandingBalance = dbData.total_balance || 0;
+        // NOTE: total_recovered and unrecovered_percentage are NOT in airtel_npl_outstanding_balance_net_summary
+        // These need to come from other tables (airtel_npl_net_recovered_value_summary, airtel_npl_unrecovered_percentage_summary)
+        const totalRecovered = dbData.net_recovered_value || dbData.recovered_amount || 0;
+        const unrecoveredPercentage = dbData.unrecovered_percentage_net || dbData.unrecovered_percentage || 0;
+        
+        console.log(`  Field mapping results:`);
+        console.log(`    total_balance: ${dbData.total_balance}, outstanding_balance: ${dbData.outstanding_balance} → ${outstandingBalance}`);
+        console.log(`    net_recovered_value: ${dbData.net_recovered_value}, recovered_amount: ${dbData.recovered_amount} → ${totalRecovered}`);
+        console.log(`    unrecovered_percentage_net: ${dbData.unrecovered_percentage_net}, unrecovered_percentage: ${dbData.unrecovered_percentage} → ${unrecoveredPercentage}`);
+        
+        return {
+          name: `${loanType} Days Loan`,
+          outstandingBalance,
+          totalRecovered,
+          unrecoveredPercentage
+        };
+      });
       
-      // If no data available, return empty structure
-      return [
-        { name: '7 Days Loan', outstandingBalance: 0, totalRecovered: 0, unrecoveredPercentage: 0 },
-        { name: '14 Days Loan', outstandingBalance: 0, totalRecovered: 0, unrecoveredPercentage: 0 },
-        { name: '21 Days Loan', outstandingBalance: 0, totalRecovered: 0, unrecoveredPercentage: 0 },
-        { name: '30 Days Loan', outstandingBalance: 0, totalRecovered: 0, unrecoveredPercentage: 0 }
-      ];
+      // Calculate total balance row from actual data - EXACTLY as in manual calculations
+      const totalOutstanding = loanTypesData.reduce((sum, item) => sum + item.outstandingBalance, 0);
+      const totalRecovered = loanTypesData.reduce((sum, item) => sum + item.totalRecovered, 0);
+      
+      // EXACT formula from NPL copy.tsx verification: outstanding / (outstanding + recovered) * 100
+      // Expected: 9088782 / (9088782 + 48904082) * 100 = 15.67%
+      const totalUnrecoveredPercentage = totalOutstanding > 0 ? 
+        ((totalOutstanding / (totalOutstanding + totalRecovered)) * 100) : 0;
+      
+      console.log('Total Balance Calculation Debug:');
+      console.log('  Total Outstanding:', totalOutstanding, '(expected: 9088782)');
+      console.log('  Total Recovered:', totalRecovered, '(expected: 48904082)');
+      console.log('  Calculated Unrecovered %:', totalUnrecoveredPercentage.toFixed(2), '(expected: 15.67)');
+      console.log('  Formula: ', totalOutstanding, '/ (', totalOutstanding, '+', totalRecovered, ') * 100');
+      
+      loanTypesData.push({
+        name: 'Total Balance',
+        outstandingBalance: totalOutstanding,
+        totalRecovered: totalRecovered,
+        unrecoveredPercentage: totalUnrecoveredPercentage
+      });
+      
+      return loanTypesData;
     })(),
     
     arrearsOverTimeData: (() => {
-      // Try to use database data if available
-      if (data && data.length > 0) {
-        console.log('NPL Data received:', data); // Debug log
-        
-        // Look for Grand Total with more flexible matching
-        const grandTotalData = data.find(item => 
-          item.loan_type === 'Grand Total' || 
-          item.loan_type?.toLowerCase().includes('grand') ||
-          item.loan_type?.toLowerCase().includes('total')
-        );
-        
-        console.log('Grand Total data found:', grandTotalData); // Debug log
-        
-        if (grandTotalData) {
-          const arrearsData = [
-            { name: 'Within Tenure', amount: grandTotalData.within_tenure || 0 },
-            { name: '30 days in arrears', amount: grandTotalData.arrears_30_days || 0 },
-            { name: '31-60 days in arrears', amount: grandTotalData.arrears_31_60_days || 0 },
-            { name: '61-90 days in arrears', amount: grandTotalData.arrears_61_90_days || 0 },
-            { name: '91-120 days in arrears', amount: grandTotalData.arrears_91_120_days || 0 },
-            { name: '121-150 days in arrears', amount: grandTotalData.arrears_121_150_days || 0 },
-            { name: '151-180 days in arrears', amount: grandTotalData.arrears_151_180_days || 0 },
-            { name: '181+ days in arrears', amount: grandTotalData.arrears_181_plus_days || 0 }
-          ];
-          
-          console.log('Arrears data being returned:', arrearsData); // Debug log
-          return arrearsData;
-        }
-        
-        // If no Grand Total, try to aggregate from all loan types
-        console.log('No Grand Total found, aggregating from individual loan types');
-        const aggregated = {
-          within_tenure: 0,
-          arrears_30_days: 0,
-          arrears_31_60_days: 0,
-          arrears_61_90_days: 0,
-          arrears_91_120_days: 0,
-          arrears_121_150_days: 0,
-          arrears_151_180_days: 0,
-          arrears_181_plus_days: 0
-        };
-        
-        data.forEach(item => {
-          if (item.loan_type && !item.loan_type.toLowerCase().includes('total')) {
-            aggregated.within_tenure += item.within_tenure || 0;
-            aggregated.arrears_30_days += item.arrears_30_days || 0;
-            aggregated.arrears_31_60_days += item.arrears_31_60_days || 0;
-            aggregated.arrears_61_90_days += item.arrears_61_90_days || 0;
-            aggregated.arrears_91_120_days += item.arrears_91_120_days || 0;
-            aggregated.arrears_121_150_days += item.arrears_121_150_days || 0;
-            aggregated.arrears_151_180_days += item.arrears_151_180_days || 0;
-            aggregated.arrears_181_plus_days += item.arrears_181_plus_days || 0;
-          }
-        });
-        
-        return [
-          { name: 'Within Tenure', amount: aggregated.within_tenure },
-          { name: '30 days in arrears', amount: aggregated.arrears_30_days },
-          { name: '31-60 days in arrears', amount: aggregated.arrears_31_60_days },
-          { name: '61-90 days in arrears', amount: aggregated.arrears_61_90_days },
-          { name: '91-120 days in arrears', amount: aggregated.arrears_91_120_days },
-          { name: '121-150 days in arrears', amount: aggregated.arrears_121_150_days },
-          { name: '151-180 days in arrears', amount: aggregated.arrears_151_180_days },
-          { name: '181+ days in arrears', amount: aggregated.arrears_181_plus_days }
-        ];
+      // Add debugging for arrears data
+      if (!data || data.length === 0) {
+        console.error('NPL Arrears Data Error - No data received');
+        // Return empty array instead of throwing error
+        return [];
       }
       
-      // If no database data available, return empty structure
+      console.log('\n=== ARREARS DATA TRANSFORMATION DEBUG ===');
+      console.log('NPL Arrears Data received:', data);
+      
+      // Look for Grand Total or aggregate data
+      console.log('🔍 Searching for Grand Total record...');
+      data.forEach((item, index) => {
+        console.log(`  Item ${index + 1} loan_type: "${item.loan_type}"`);
+      });
+      
+      let grandTotalData = data.find(item => 
+        item.loan_type === 'Grand Total' || 
+        item.loan_type?.toLowerCase().includes('grand') ||
+        item.loan_type?.toLowerCase().includes('total') ||
+        item.loan_type === 'Total'
+      );
+      
+      console.log('Grand Total search result:', grandTotalData ? '✅ Found' : '❌ Not found');
+      
+      if (grandTotalData) {
+        console.log('✅ Using Grand Total data:', grandTotalData);
+        console.log('Available fields in Grand Total:', Object.keys(grandTotalData));
+        
+        // Use EXACT column names from airtel_npl_outstanding_balance_net_summary schema
+        const arrearsMapping = [
+          { name: 'Within Tenure', fields: ['within_tenure'] },
+          { name: '30 days in arrears', fields: ['arrears_30_days'] },
+          { name: '31-60 days in arrears', fields: ['arrears_31_60_days'] },
+          { name: '61-90 days in arrears', fields: ['arrears_61_90_days'] },
+          { name: '91-120 days in arrears', fields: ['arrears_91_120_days'] },
+          { name: '121-150 days in arrears', fields: ['arrears_121_150_days'] },
+          { name: '151-180 days in arrears', fields: ['arrears_151_180_days'] },
+          { name: '181+ days in arrears', fields: ['arrears_181_plus_days'] }
+        ];
+        
+        const result = arrearsMapping.map(mapping => {
+          let amount = 0;
+          for (const field of mapping.fields) {
+            if (grandTotalData[field]) {
+              amount = grandTotalData[field];
+              console.log(`  ${mapping.name}: found in field "${field}" = ${amount}`);
+              break;
+            }
+          }
+          if (amount === 0) {
+            console.log(`  ❌ ${mapping.name}: no data found in fields ${mapping.fields.join(', ')}`);
+          }
+          return { name: mapping.name, amount };
+        });
+        
+        console.log('Final arrears result from Grand Total:', result);
+        return result;
+      }
+      
+      // Aggregate from individual loan types if no total found
+      const aggregated = {
+        within_tenure: 0,
+        arrears_30_days: 0,
+        arrears_31_60_days: 0,
+        arrears_61_90_days: 0,
+        arrears_91_120_days: 0,
+        arrears_121_150_days: 0,
+        arrears_151_180_days: 0,
+        arrears_181_plus_days: 0
+      };
+      
+      data.forEach(item => {
+        if (item.loan_type && !item.loan_type.toLowerCase().includes('total')) {
+          // Use exact column names from the database schema
+          aggregated.within_tenure += item.within_tenure || 0;
+          aggregated.arrears_30_days += item.arrears_30_days || 0;
+          aggregated.arrears_31_60_days += item.arrears_31_60_days || 0;
+          aggregated.arrears_61_90_days += item.arrears_61_90_days || 0;
+          aggregated.arrears_91_120_days += item.arrears_91_120_days || 0;
+          aggregated.arrears_121_150_days += item.arrears_121_150_days || 0;
+          aggregated.arrears_151_180_days += item.arrears_151_180_days || 0;
+          aggregated.arrears_181_plus_days += item.arrears_181_plus_days || 0;
+        }
+      });
+      
+      // Validate that we have meaningful data
+      const totalAmount = Object.values(aggregated).reduce((sum, val) => sum + val, 0);
+      if (totalAmount === 0) {
+        console.warn('No valid arrears data found in database - all values are zero');
+        // Return structure with zeros instead of throwing error
+      }
+      
       return [
-        { name: 'Within Tenure', amount: 0 },
-        { name: '30 days in arrears', amount: 0 },
-        { name: '31-60 days in arrears', amount: 0 },
-        { name: '61-90 days in arrears', amount: 0 },
-        { name: '91-120 days in arrears', amount: 0 },
-        { name: '121-150 days in arrears', amount: 0 },
-        { name: '151-180 days in arrears', amount: 0 },
-        { name: '181+ days in arrears', amount: 0 }
+        { name: 'Within Tenure', amount: aggregated.within_tenure },
+        { name: '30 days in arrears', amount: aggregated.arrears_30_days },
+        { name: '31-60 days in arrears', amount: aggregated.arrears_31_60_days },
+        { name: '61-90 days in arrears', amount: aggregated.arrears_61_90_days },
+        { name: '91-120 days in arrears', amount: aggregated.arrears_91_120_days },
+        { name: '121-150 days in arrears', amount: aggregated.arrears_121_150_days },
+        { name: '151-180 days in arrears', amount: aggregated.arrears_151_180_days },
+        { name: '181+ days in arrears', amount: aggregated.arrears_181_plus_days }
       ];
     })()
   };

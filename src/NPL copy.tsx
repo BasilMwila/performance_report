@@ -3,22 +3,22 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 
 // Prepare data for visualization
 const loanTypeData = [
-  { name: '7 Days Loan', outstandingBalance: 873849, totalRecovered: 7601962, unrecoveredPercentage: 10.31 },
-  { name: '14 Days Loan', outstandingBalance: 2308361, totalRecovered: 11851638, unrecoveredPercentage: 16.30 },
-  { name: '21 Days Loan', outstandingBalance: 786780, totalRecovered: 3943402, unrecoveredPercentage: 16.63 },
-  { name: '30 Days Loan', outstandingBalance: 5492898, totalRecovered: 20930017, unrecoveredPercentage: 20.79 },
-  { name: 'Total Balance', outstandingBalance: 9461888, totalRecovered: 44327019, unrecoveredPercentage: 17.59 }
+  { name: '7 Days Loan', outstandingBalance: 782240, totalRecovered: 8255745, unrecoveredPercentage: 8.66 },
+  { name: '14 Days Loan', outstandingBalance: 2120869, totalRecovered: 13055876, unrecoveredPercentage: 13.97 },
+  { name: '21 Days Loan', outstandingBalance: 711146, totalRecovered: 4320401, unrecoveredPercentage: 14.13 },
+  { name: '30 Days Loan', outstandingBalance: 5474527, totalRecovered: 23272060, unrecoveredPercentage: 19.04 },
+  { name: 'Total Balance', outstandingBalance: 9088782, totalRecovered: 48904082, unrecoveredPercentage: 15.67 }
 ];
 
 const ArrearsOverTimeData = [
-  { name: 'Within Tenure', amount:  4441377 },
-  { name: '30 days in arrears', amount: 1077824 },
-  { name: '31-60 days in arrears', amount: 407718 },
-  { name: '61-90 days in arrears', amount: 353860 },
-  { name: '91-120 days in arrears', amount: 250854 },
-  { name: '121-150 days in arrears', amount: 303382 },
-  { name: '151-180 days in arrears', amount: 317789 },
-  { name: '181+ days in arrears', amount: 2309084 }
+  { name: 'Within Tenure', amount:  4269869 },
+  { name: '30 days in arrears', amount: 1355126 },
+  { name: '31-60 days in arrears', amount: 387479 },
+  { name: '61-90 days in arrears', amount: 225064 },
+  { name: '91-120 days in arrears', amount: 202204 },
+  { name: '121-150 days in arrears', amount: 228231 },
+  { name: '151-180 days in arrears', amount: 278085 },
+  { name: '181+ days in arrears', amount: 2142724 }
 ];
 
 // Calculate actual total values from the data

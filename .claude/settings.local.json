@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill:*)",
+      "Bash(set PORT=5001)",
+      "Bash(node server.js)",
+      "Bash(curl:*)"
+    ],
+    "deny": []
+  }
+}

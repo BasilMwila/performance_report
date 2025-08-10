@@ -60,7 +60,26 @@ const RecoveryRateDashboard = () => {
     return (
       <div className="p-4 space-y-6">
         <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
-        <div className="text-center text-red-600">Error loading NPL data: {error}</div>
+        <div className="text-center text-red-600">
+          <p>Error loading NPL data: {error}</p>
+          <p className="text-sm mt-2">Check browser console for detailed debugging information</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if we have no data (empty arrays)
+  const hasData = loanTypeData && loanTypeData.length > 0 && arrearsOverTimeData && arrearsOverTimeData.length > 0;
+  
+  if (!loading && !hasData) {
+    return (
+      <div className="p-4 space-y-6">
+        <h1 className="text-2xl font-bold text-center">NPL Report Dashboard</h1>
+        <div className="text-center text-yellow-600">
+          <p>No NPL data available from database</p>
+          <p className="text-sm mt-2">Check browser console for detailed debugging information</p>
+          <p className="text-sm">Ensure the NPL database tables contain data and the API endpoint is working</p>
+        </div>
       </div>
     );
   }
@@ -88,14 +107,26 @@ const RecoveryRateDashboard = () => {
     const totalOverdueRate = totalNetOutstanding > 0 ? (totalOverdue / totalNetOutstanding) * 100 : 0;
     const nplRate = totalNetOutstanding > 0 ? (nplAmount / totalNetOutstanding) * 100 : 0;
     
-    // Calculate NPL rate from actual database data only
-    const actualNplRate = nplRate;
+    // Debug: Compare with expected values from NPL copy.tsx
+    console.log('NPL Dashboard Metrics Calculation Debug:');
+    console.log('  Total Net Outstanding:', totalNetOutstanding, '(expected: 9088782)');
+    console.log('  Total Overdue:', totalOverdue, '(expected: 4818913)');
+    console.log('  NPL Amount (90+ days):', nplAmount, '(expected: 2851244)');
+    console.log('  Total Overdue Rate:', totalOverdueRate.toFixed(2), '% (expected: 53.02%)');
+    console.log('  NPL Rate:', nplRate.toFixed(2), '% (expected: 31.37%)');
+    console.log('  Performing Rate:', (100 - nplRate).toFixed(2), '% (expected: 68.63%)');
+    
+    // NPL Breakdown Debug
+    const nplBreakdown = arrearsOverTimeData
+      .filter(item => ['91-120 days in arrears', '121-150 days in arrears', '151-180 days in arrears', '181+ days in arrears'].includes(item.name));
+    console.log('  NPL Breakdown:');
+    nplBreakdown.forEach(item => console.log('   ', item.name + ':', item.amount));
 
     return {
       totalNetOutstanding,
       totalOverdueRate,
-      nplRate: actualNplRate,
-      performingRate: 100 - actualNplRate
+      nplRate,
+      performingRate: 100 - nplRate
     };
   };
 
